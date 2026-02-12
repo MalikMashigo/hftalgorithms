@@ -7,7 +7,6 @@
 
 static std::string go_irish = "GOIRISH!"; // 8 bytes
 static const uint64_t MAGIC_NUMBER = *reinterpret_cast<const uint64_t*>(go_irish.c_str());
-
 static std::string snapshot = "SNAPSHOT"; // 8 bytes
 static const uint64_t SNAPSHOT_MAGIC_NUMBER = *reinterpret_cast<const uint64_t*>(snapshot.c_str());
 
@@ -81,7 +80,7 @@ struct snapshot_info {
 } __attribute__((packed));
 
 static const uint16_t MAX_MSG_SIZE = std::max(sizeof(new_order),
-    std::max(sizeof(delete_order), std::max(sizeof(modify_order), 
-    std::max(sizeof(trade), std::max(sizeof(trade_summary), sizeof(snapshot_info))))));
+    std::max(sizeof(delete_order), std::max(sizeof(modify_order), std::max(sizeof(trade),
+    std::max(sizeof(trade_summary), sizeof(snapshot_info))))));
 
 #endif

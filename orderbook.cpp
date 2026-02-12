@@ -2,26 +2,24 @@
 #include <iostream>
 #include <stdexcept>
 
-OrderBook::OrderBook() {
-    // Reserve space to avoid frequent reallocations
-    orders_.reserve(100000);
-}
-
 void OrderBook::handle_new_order(const new_order* msg) {
-    // Check if order already exists (shouldn't happen, but good to validate)
+    if (msg->header.msg_type != MSG_TYPE::NEW_ORDER) return;
+    
+    // Check for duplicate order
     if (orders_.find(msg->order_id) != orders_.end()) {
-        std::cerr << "ERROR: Duplicate order_id " << msg->order_id << std::endl;
-        return;
+        std::cerr << "ERROR: Duplicate order ID " << msg->order_id << std::endl;
+        throw std::runtime_error("Duplicate order ID");
     }
     
     // Validate price and quantity
-    if (msg->price <= 0) {
-        std::cerr << "ERROR: Invalid price " << msg->price << " for order " << msg->order_id << std::endl;
-        return;
-    }
     if (msg->quantity == 0) {
-        std::cerr << "ERROR: Zero quantity for order " << msg->order_id << std::endl;
-        return;
+        std::cerr << "ERROR: Zero quantity order" << std::endl;
+        throw std::runtime_error("Zero quantity");
+    }
+    
+    if (msg->price < 0) {
+        std::cerr << "ERROR: Negative price" << std::endl;
+        throw std::runtime_error("Negative price");
     }
     
     // Store order info
@@ -30,117 +28,120 @@ void OrderBook::handle_new_order(const new_order* msg) {
     info.quantity = msg->quantity;
     info.side = msg->side;
     info.symbol = msg->symbol;
-    orders_[msg->order_id] = info;
     
-    // Add to appropriate price level
+    orders_[msg->order_id] = info;
     add_to_price_level(msg->side, msg->price, msg->quantity);
+    
+    // Update last sequence number
+    last_seq_num_ = msg->header.seq_num;
+    
+    // Check for crossed book
+    if (is_crossed()) {
+        std::cerr << "ERROR: Book is crossed after new order!" << std::endl;
+        print_book();
+        throw std::runtime_error("Crossed book");
+    }
 }
 
 void OrderBook::handle_delete_order(const delete_order* msg) {
-    // Find the order
     auto it = orders_.find(msg->order_id);
     if (it == orders_.end()) {
-        std::cerr << "ERROR: Order " << msg->order_id << " not found for delete" << std::endl;
+        // Order not found - might have been fully traded
         return;
     }
     
-    // Remove from price level
-    remove_from_price_level(it->second.side, it->second.price, it->second.quantity);
+    const OrderInfo& info = it->second;
     
-    // Remove from order tracking
+    // Only process if this order belongs to our symbol
+    if (info.symbol != symbol_) {
+        return;
+    }
+    
+    remove_from_price_level(info.side, info.price, info.quantity);
     orders_.erase(it);
+    
+    last_seq_num_ = msg->header.seq_num;
 }
 
 void OrderBook::handle_modify_order(const modify_order* msg) {
-    // Find the order
     auto it = orders_.find(msg->order_id);
     if (it == orders_.end()) {
-        std::cerr << "ERROR: Order " << msg->order_id << " not found for modify" << std::endl;
+        std::cerr << "WARNING: Modifying non-existent order " << msg->order_id << std::endl;
         return;
     }
     
-    // Validate new quantity and price
-    if (msg->quantity == 0) {
-        std::cerr << "ERROR: Modified quantity is zero for order " << msg->order_id << std::endl;
-        return;
-    }
-    if (msg->price <= 0) {
-        std::cerr << "ERROR: Invalid modified price " << msg->price << std::endl;
+    OrderInfo& info = it->second;
+    
+    // Only process if this order belongs to our symbol
+    if (info.symbol != symbol_) {
         return;
     }
     
-    OrderInfo& order = it->second;
+    // Remove old quantity from price level
+    remove_from_price_level(info.side, info.price, info.quantity);
     
-    // If price changed, need to move to different price level
-    if (order.price != msg->price) {
-        // Remove from old price level
-        remove_from_price_level(order.side, order.price, order.quantity);
-        // Add to new price level
-        add_to_price_level(msg->side, msg->price, msg->quantity);
-        order.price = msg->price;
-    } else {
-        // Price same, just update quantity at this level
-        uint32_t qty_diff;
-        if (msg->quantity > order.quantity) {
-            qty_diff = msg->quantity - order.quantity;
-            add_to_price_level(order.side, order.price, qty_diff);
-        } else {
-            qty_diff = order.quantity - msg->quantity;
-            remove_from_price_level(order.side, order.price, qty_diff);
-        }
+    // Update order info
+    info.price = msg->price;
+    info.quantity = msg->quantity;
+    info.side = msg->side;
+    
+    // Add new quantity to (possibly new) price level
+    add_to_price_level(info.side, info.price, info.quantity);
+    
+    last_seq_num_ = msg->header.seq_num;
+    
+    if (is_crossed()) {
+        std::cerr << "ERROR: Book crossed after modify!" << std::endl;
+        throw std::runtime_error("Crossed book");
     }
-    
-    order.quantity = msg->quantity;
-    order.side = msg->side;
 }
 
 void OrderBook::handle_trade(const trade* msg) {
-    // Find the order
     auto it = orders_.find(msg->order_id);
     if (it == orders_.end()) {
-        std::cerr << "ERROR: Order " << msg->order_id << " not found for trade" << std::endl;
+        // Order might have been deleted or fully traded already
         return;
     }
     
-    OrderInfo& order = it->second;
+    OrderInfo& info = it->second;
     
-    // Validate trade quantity
-    if (msg->quantity > order.quantity) {
-        std::cerr << "ERROR: Trade quantity " << msg->quantity 
-                  << " exceeds order quantity " << order.quantity << std::endl;
+    // Only process if this order belongs to our symbol
+    if (info.symbol != symbol_) {
         return;
+    }
+    
+    if (msg->quantity > info.quantity) {
+        std::cerr << "ERROR: Trade quantity " << msg->quantity 
+                  << " exceeds order quantity " << info.quantity << "!" << std::endl;
+        throw std::runtime_error("Invalid trade quantity");
     }
     
     // Reduce quantity at price level
-    remove_from_price_level(order.side, order.price, msg->quantity);
+    remove_from_price_level(info.side, info.price, msg->quantity);
+    info.quantity -= msg->quantity;
     
-    // Update order quantity
-    order.quantity -= msg->quantity;
-    
-    // If fully filled, remove order
-    if (order.quantity == 0) {
+    // If fully executed, remove order
+    if (info.quantity == 0) {
         orders_.erase(it);
     }
+    
+    last_seq_num_ = msg->header.seq_num;
 }
 
 int32_t OrderBook::get_best_bid_price() const {
-    if (bids_.empty()) return 0;
-    return bids_.begin()->first;
+    return bids_.empty() ? 0 : bids_.begin()->first;
 }
 
 uint32_t OrderBook::get_best_bid_qty() const {
-    if (bids_.empty()) return 0;
-    return bids_.begin()->second;
+    return bids_.empty() ? 0 : bids_.begin()->second;
 }
 
 int32_t OrderBook::get_best_ask_price() const {
-    if (asks_.empty()) return 0;
-    return asks_.begin()->first;
+    return asks_.empty() ? 0 : asks_.begin()->first;
 }
 
 uint32_t OrderBook::get_best_ask_qty() const {
-    if (asks_.empty()) return 0;
-    return asks_.begin()->second;
+    return asks_.empty() ? 0 : asks_.begin()->second;
 }
 
 void OrderBook::add_to_price_level(SIDE side, int32_t price, uint32_t quantity) {
@@ -155,20 +156,29 @@ void OrderBook::remove_from_price_level(SIDE side, int32_t price, uint32_t quant
     if (side == SIDE::BUY) {
         auto it = bids_.find(price);
         if (it != bids_.end()) {
-            if (it->second <= quantity) {
-                // Remove price level entirely if quantity goes to 0
+            if (it->second < quantity) {
+                std::cerr << "ERROR: Removing more quantity (" << quantity 
+                          << ") than exists (" << it->second << ") at bid price level " 
+                          << price << std::endl;
+                throw std::runtime_error("Invalid quantity removal");
+            }
+            it->second -= quantity;
+            if (it->second == 0) {
                 bids_.erase(it);
-            } else {
-                it->second -= quantity;
             }
         }
     } else {
         auto it = asks_.find(price);
         if (it != asks_.end()) {
-            if (it->second <= quantity) {
+            if (it->second < quantity) {
+                std::cerr << "ERROR: Removing more quantity (" << quantity 
+                          << ") than exists (" << it->second << ") at ask price level " 
+                          << price << std::endl;
+                throw std::runtime_error("Invalid quantity removal");
+            }
+            it->second -= quantity;
+            if (it->second == 0) {
                 asks_.erase(it);
-            } else {
-                it->second -= quantity;
             }
         }
     }
@@ -176,15 +186,20 @@ void OrderBook::remove_from_price_level(SIDE side, int32_t price, uint32_t quant
 
 bool OrderBook::is_crossed() const {
     if (bids_.empty() || asks_.empty()) return false;
-    return get_best_bid_price() >= get_best_ask_price();
+    return bids_.begin()->first >= asks_.begin()->first;
 }
 
 void OrderBook::print_book() const {
-    std::cout << "\n=== Order Book ===" << std::endl;
+    std::cout << "\n=== Order Book (Symbol " << symbol_ << ") ===" << std::endl;
+    std::cout << "ASKS:" << std::endl;
+    for (auto it = asks_.rbegin(); it != asks_.rend(); ++it) {
+        std::cout << "  " << it->first << " @ " << it->second << std::endl;
+    }
+    std::cout << "---" << std::endl;
+    for (const auto& bid : bids_) {
+        std::cout << "  " << bid.first << " @ " << bid.second << std::endl;
+    }
+    std::cout << "BIDS:" << std::endl;
     std::cout << "Best Bid: " << get_best_bid_price() << " @ " << get_best_bid_qty() << std::endl;
     std::cout << "Best Ask: " << get_best_ask_price() << " @ " << get_best_ask_qty() << std::endl;
-    std::cout << "Total Orders: " << orders_.size() << std::endl;
-    if (is_crossed()) {
-        std::cout << "WARNING: Book is crossed!" << std::endl;
-    }
 }
