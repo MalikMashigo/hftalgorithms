@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <cstring>
 #include "messages.h"
+#include "orderbook.h"
 
 const char* msg_type_to_string(MSG_TYPE type);
 
@@ -17,6 +18,8 @@ int create_multicast_socket(const char* mcast_addr, int port, const char* local_
 
 int main(int argc, char *argv[])
 {
+    OrderBook book;
+
     //Network configuration for NDFEX exchange
     const char* live_addr = "239.0.0.1";
     const int live_port = 12345;
@@ -83,14 +86,32 @@ int main(int argc, char *argv[])
                 
                 //Check magic number to determine message source
                 if (header->magic_number == MAGIC_NUMBER) {
-                    std::cout << "GOIRISH - Seq: " << header->seq_num 
-                              << ", Type: " << msg_type_to_string(header->msg_type) 
-                              << std::endl;    
-                } else if (header->magic_number == SNAPSHOT_MAGIC_NUMBER) {
-                    std::cout << "SNAPSHOT - Seq: " << header->seq_num 
-                              << ", Type: " << msg_type_to_string(header->msg_type) 
-                              << std::endl;
+                    switch (header->msg_type) {
+                        case MSG_TYPE::NEW_ORDER:
+                            book.handle_new_order(reinterpret_cast<const new_order*>(buf));
+                            break;
+                        case MSG_TYPE::DELETE_ORDER:
+                            book.handle_delete_order(reinterpret_cast<const delete_order*>(buf));
+                            break;
+                        case MSG_TYPE::MODIFY_ORDER:
+                            book.handle_modify_order(reinterpret_cast<const modify_order*>(buf));
+                            break;
+                        case MSG_TYPE::TRADE:
+                            book.handle_trade(reinterpret_cast<const trade*>(buf));
+                            break;
+                        case MSG_TYPE::HEARTBEAT:
+                            break;
+                        case MSG_TYPE::TRADE_SUMMARY:
+        
+                            break;
+                        case MSG_TYPE::SNAPSHOT_INFO:
+                            break;
                 }
+
+                // After each message, can check best bid/ask
+                std::cout << "Best Bid: " << book.get_best_bid_price() 
+                  << " @ " << book.get_best_bid_qty() << std::endl;
+    }
             }
         }
     }
@@ -124,6 +145,10 @@ int create_multicast_socket(const char* mcast_addr, int port, const char* local_
         std::cerr << "Failed to create socket: " << strerror(errno) << std::endl;
         exit(1);
     }
+
+    int reuse = 1;
+    setsockopt(mcast_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+    setsockopt(mcast_fd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse));
 
     //Make socket non-blocking so we can use epoll efficiently
     int flags = fcntl(mcast_fd, F_GETFL, 0);
