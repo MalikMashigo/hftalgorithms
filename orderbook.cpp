@@ -8,18 +8,21 @@ void OrderBook::handle_new_order(const new_order* msg) {
     // Check for duplicate order
     if (orders_.find(msg->order_id) != orders_.end()) {
         std::cerr << "ERROR: Duplicate order ID " << msg->order_id << std::endl;
-        throw std::runtime_error("Duplicate order ID");
+        //throw std::runtime_error("Duplicate order ID");
+        return;
     }
     
     // Validate price and quantity
     if (msg->quantity == 0) {
         std::cerr << "ERROR: Zero quantity order" << std::endl;
-        throw std::runtime_error("Zero quantity");
+        //throw std::runtime_error("Zero quantity");
+        return;
     }
     
     if (msg->price < 0) {
         std::cerr << "ERROR: Negative price" << std::endl;
-        throw std::runtime_error("Negative price");
+        //throw std::runtime_error("Negative price");
+        return;
     }
     
     // Store order info
@@ -39,7 +42,7 @@ void OrderBook::handle_new_order(const new_order* msg) {
     if (is_crossed()) {
         std::cerr << "ERROR: Book is crossed after new order!" << std::endl;
         print_book();
-        throw std::runtime_error("Crossed book");
+        //throw std::runtime_error("Crossed book");
     }
 }
 
@@ -92,7 +95,7 @@ void OrderBook::handle_modify_order(const modify_order* msg) {
     
     if (is_crossed()) {
         std::cerr << "ERROR: Book crossed after modify!" << std::endl;
-        throw std::runtime_error("Crossed book");
+        //throw std::runtime_error("Crossed book");
     }
 }
 
@@ -113,7 +116,10 @@ void OrderBook::handle_trade(const trade* msg) {
     if (msg->quantity > info.quantity) {
         std::cerr << "ERROR: Trade quantity " << msg->quantity 
                   << " exceeds order quantity " << info.quantity << "!" << std::endl;
-        throw std::runtime_error("Invalid trade quantity");
+        //throw std::runtime_error("Invalid trade quantity");
+        remove_from_price_level(info.side, info.price, info.quantity);
+        orders_.erase(it);
+        return; 
     }
     
     // Reduce quantity at price level
@@ -160,7 +166,9 @@ void OrderBook::remove_from_price_level(SIDE side, int32_t price, uint32_t quant
                 std::cerr << "ERROR: Removing more quantity (" << quantity 
                           << ") than exists (" << it->second << ") at bid price level " 
                           << price << std::endl;
-                throw std::runtime_error("Invalid quantity removal");
+                //throw std::runtime_error("Invalid quantity removal");
+                bids_.erase(it); 
+                return;
             }
             it->second -= quantity;
             if (it->second == 0) {
@@ -174,7 +182,9 @@ void OrderBook::remove_from_price_level(SIDE side, int32_t price, uint32_t quant
                 std::cerr << "ERROR: Removing more quantity (" << quantity 
                           << ") than exists (" << it->second << ") at ask price level " 
                           << price << std::endl;
-                throw std::runtime_error("Invalid quantity removal");
+                //throw std::runtime_error("Invalid quantity removal");
+                asks_.erase(it);
+                return;
             }
             it->second -= quantity;
             if (it->second == 0) {

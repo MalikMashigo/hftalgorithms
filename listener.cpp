@@ -12,6 +12,7 @@
 #include <map>
 #include <fstream>
 #include <queue>
+#include <sstream>
 #include "messages.h"
 #include "orderbook.h"
 
@@ -22,10 +23,23 @@ struct BufferedMessage {
     size_t length;
 };
 
+// Helper function to record BBO
+void record_bbo(std::stringstream& buffer, uint32_t seq_num, uint32_t symbol, const OrderBook& book) {
+    buffer << seq_num << ","
+           << symbol << ","
+           << book.get_best_bid_price() << ","
+           << book.get_best_bid_qty() << ","
+           << book.get_best_ask_price() << ","
+           << book.get_best_ask_qty() << "\n";
+}
+
 int main(int, char *[])
 {
     // Map from symbol ID to OrderBook
     std::map<uint32_t, OrderBook> books;
+
+    //  Map order_id to symbol for fast lookups
+    std::unordered_map<uint64_t, uint32_t> order_to_symbol; 
     
     // Track expected sequence numbers per symbol
     std::map<uint32_t, uint32_t> expected_seq_nums;
@@ -35,7 +49,9 @@ int main(int, char *[])
     
     // File to record best bid/ask for homework checker
     std::ofstream outfile("bbo_data.csv");
-    outfile << "seq_num,symbol,bid_price,bid_qty,ask_price,ask_qty" << std::endl;
+    std::stringstream csv_buffer;
+    int write_counter = 0;
+    outfile << "seq_num,symbol,bid_price,bid_qty,ask_price,ask_qty\n";
     
     const char* live_addr = "239.0.0.1";
     const int live_port = 12345;
@@ -122,43 +138,73 @@ int main(int, char *[])
                                     }
                                     
                                     books.at(symbol).handle_new_order(order_msg);
-                                    
-                                    outfile << seq_num << ","
-                                            << symbol << ","
-                                            << books.at(symbol).get_best_bid_price() << ","
-                                            << books.at(symbol).get_best_bid_qty() << ","
-                                            << books.at(symbol).get_best_ask_price() << ","
-                                            << books.at(symbol).get_best_ask_qty() << std::endl;
+                                    order_to_symbol[order_msg->order_id] = symbol;
+                                    record_bbo(csv_buffer, seq_num, symbol, books.at(symbol));
+                                    write_counter++;
                                 }
                                 break;
                             }
                             case MSG_TYPE::DELETE_ORDER: {
-                                delete_order* del_msg = reinterpret_cast<delete_order*>(buf);
-                                for (auto& pair : books) {
-                                    pair.second.handle_delete_order(del_msg);
+                                delete_order* msg = reinterpret_cast<delete_order*>(buf);
+                                auto sym_it = order_to_symbol.find(msg->order_id);
+                                if (sym_it != order_to_symbol.end()) {
+                                    uint32_t symbol = sym_it->second;
+                                    if (books.find(symbol) != books.end()) {
+                                        books.at(symbol).handle_delete_order(msg);
+                                        record_bbo(csv_buffer, msg->header.seq_num, symbol, books.at(symbol));
+                                        write_counter++;
+                                    }
+                                order_to_symbol.erase(sym_it);
                                 }
+                                messages_processed++;
+                                no_replay_count = 0;
                                 break;
                             }
                             case MSG_TYPE::MODIFY_ORDER: {
-                                modify_order* mod_msg = reinterpret_cast<modify_order*>(buf);
-                                for (auto& pair : books) {
-                                    pair.second.handle_modify_order(mod_msg);
+                                modify_order* msg = reinterpret_cast<modify_order*>(buf);
+                                auto sym_it = order_to_symbol.find(msg->order_id);
+                                if (sym_it != order_to_symbol.end()) {
+                                    uint32_t symbol = sym_it->second;
+                                    if (books.find(symbol) != books.end()) {
+                                        books.at(symbol).handle_modify_order(msg);
+                                        record_bbo(csv_buffer, msg->header.seq_num, symbol, books.at(symbol));
+                                        write_counter++;
+                                    }
                                 }
+                                messages_processed++;
+                                no_replay_count = 0;
                                 break;
                             }
                             case MSG_TYPE::TRADE: {
-                                trade* trade_msg = reinterpret_cast<trade*>(buf);
-                                for (auto& pair : books) {
-                                    pair.second.handle_trade(trade_msg);
+                                trade* msg = reinterpret_cast<trade*>(buf);
+                                auto sym_it = order_to_symbol.find(msg->order_id);
+                                if (sym_it != order_to_symbol.end()) {
+                                    uint32_t symbol = sym_it->second;
+                                    if (books.find(symbol) != books.end()) {
+                                        books.at(symbol).handle_trade(msg);
+                                        record_bbo(csv_buffer, msg->header.seq_num, symbol, books.at(symbol));
+                                        write_counter++;
+                                    }
                                 }
+                                messages_processed++;
+                                no_replay_count = 0;
                                 break;
                             }
                             default:
                                 break;
                         }
+                        
                     }
                     
                     live_buffer.pop();
+                }
+
+                if (write_counter > 0) {
+                    outfile << csv_buffer.str();
+                    outfile.flush();
+                    csv_buffer.str("");
+                    csv_buffer.clear();
+                    write_counter = 0;
                 }
                 
                 std::cout << "Now processing live feed in real-time." << std::endl;
@@ -189,28 +235,49 @@ int main(int, char *[])
             
             // Handle snapshot messages
             if (header->magic_number == SNAPSHOT_MAGIC_NUMBER) {
-                snapshot_info* snap = reinterpret_cast<snapshot_info*>(buf);
+                ssize_t offset = 0;
+    
+                while (offset < bytes) {
+                    md_header* hdr = reinterpret_cast<md_header*>(buf + offset);
+        
+                    if (hdr->msg_type == MSG_TYPE::SNAPSHOT_INFO) {
+                        snapshot_info* snap = reinterpret_cast<snapshot_info*>(buf + offset);
+                        uint32_t symbol = snap->symbol;
+                        uint32_t last_seq = snap->last_md_seq_num;
+            
+                        std::cout << "Snapshot: symbol " << symbol << " at seq " << last_seq 
+                            << " (" << snap->bid_count << " bids, " << snap->ask_count << " asks)" << std::endl;
+            
+                        if (books.find(symbol) != books.end()) {
+                            books.erase(symbol);
+                        }
+                        books.emplace(symbol, OrderBook(symbol));
+                        books.at(symbol).set_last_seq_num(last_seq);
+                        expected_seq_nums[symbol] = last_seq + 1;
+            
+                        received_snapshot = true;
+                        no_replay_count = 0;
+                        offset += snap->header.length;
+            
+                        // READ THE ORDERS FROM SNAPSHOT
+                        uint32_t total_orders = snap->bid_count + snap->ask_count;
+                        for (uint32_t j = 0; j < total_orders && offset < bytes; j++) {
+                            if (offset + sizeof(new_order) > bytes) break;
                 
-                uint32_t symbol = snap->symbol;
-                uint32_t last_seq = snap->last_md_seq_num;
-                
-                std::cout << "Snapshot: symbol " << symbol << " at seq " << last_seq << std::endl;
-                
-                // Create or reset book
-                if (books.find(symbol) == books.end()) {
-                    books.emplace(symbol, OrderBook(symbol));
-                } else {
-                    // Clear existing book and rebuild from snapshot
-                    books.erase(symbol);
-                    books.emplace(symbol, OrderBook(symbol));
-                }
-                
-                books.at(symbol).set_last_seq_num(last_seq);
-                expected_seq_nums[symbol] = last_seq + 1;
-                
-                received_snapshot = true;
-                no_replay_count = 0;
-                
+                            new_order* order_msg = reinterpret_cast<new_order*>(buf + offset);
+                            if (order_msg->header.msg_type == MSG_TYPE::NEW_ORDER) {
+                                books.at(symbol).handle_new_order(order_msg);
+                                order_to_symbol[order_msg->order_id] = symbol;
+                                offset += order_msg->header.length;
+                            } else {
+                                break;
+                            }
+                        }
+                    std::cout << "  Loaded " << total_orders << " orders into book" << std::endl;
+                    } else {
+                        break;
+                        }
+                    }
                 continue;
             }
             
@@ -248,14 +315,11 @@ int main(int, char *[])
                     expected_seq_nums[symbol] = seq_num + 1;
                     
                     books.at(symbol).handle_new_order(msg);
+                    order_to_symbol[msg->order_id] = symbol;  
                     
                     // Record BBO
-                    outfile << seq_num << ","
-                            << symbol << ","
-                            << books.at(symbol).get_best_bid_price() << ","
-                            << books.at(symbol).get_best_bid_qty() << ","
-                            << books.at(symbol).get_best_ask_price() << ","
-                            << books.at(symbol).get_best_ask_qty() << std::endl;
+                    record_bbo(csv_buffer, seq_num, symbol, books.at(symbol));
+                    write_counter++;
                     
                     messages_processed++;
                     if (messages_processed % 1000 == 0) {
@@ -268,8 +332,15 @@ int main(int, char *[])
                 }
                 case MSG_TYPE::DELETE_ORDER: {
                     delete_order* msg = reinterpret_cast<delete_order*>(buf);
-                    for (auto& pair : books) {
-                        pair.second.handle_delete_order(msg);
+                    auto sym_it = order_to_symbol.find(msg->order_id);
+                    if (sym_it != order_to_symbol.end()) {
+                        uint32_t symbol = sym_it->second;
+                        if (books.find(symbol) != books.end()) {
+                            books.at(symbol).handle_delete_order(msg);
+                            record_bbo(csv_buffer, msg->header.seq_num, symbol, books.at(symbol));
+                            write_counter++;
+                        }
+                        order_to_symbol.erase(sym_it);
                     }
                     messages_processed++;
                     no_replay_count = 0;
@@ -277,8 +348,14 @@ int main(int, char *[])
                 }
                 case MSG_TYPE::MODIFY_ORDER: {
                     modify_order* msg = reinterpret_cast<modify_order*>(buf);
-                    for (auto& pair : books) {
-                        pair.second.handle_modify_order(msg);
+                    auto sym_it = order_to_symbol.find(msg->order_id);
+                    if (sym_it != order_to_symbol.end()) {
+                        uint32_t symbol = sym_it->second;
+                        if (books.find(symbol) != books.end()) {
+                            books.at(symbol).handle_modify_order(msg);
+                            record_bbo(csv_buffer, msg->header.seq_num, symbol, books.at(symbol));
+                            write_counter++;
+                        }
                     }
                     messages_processed++;
                     no_replay_count = 0;
@@ -286,8 +363,14 @@ int main(int, char *[])
                 }
                 case MSG_TYPE::TRADE: {
                     trade* msg = reinterpret_cast<trade*>(buf);
-                    for (auto& pair : books) {
-                        pair.second.handle_trade(msg);
+                    auto sym_it = order_to_symbol.find(msg->order_id);
+                    if (sym_it != order_to_symbol.end()) {
+                        uint32_t symbol = sym_it->second;
+                        if (books.find(symbol) != books.end()) {
+                            books.at(symbol).handle_trade(msg);
+                            record_bbo(csv_buffer, msg->header.seq_num, symbol, books.at(symbol));
+                            write_counter++;
+                        }
                     }
                     messages_processed++;
                     no_replay_count = 0;
@@ -298,6 +381,13 @@ int main(int, char *[])
                     break;
                 default:
                     break;
+            }
+            if (write_counter >= 10) {
+                outfile << csv_buffer.str();
+                outfile.flush();
+                csv_buffer.str("");
+                csv_buffer.clear();
+                write_counter = 0;
             }
         }
         
@@ -311,6 +401,12 @@ int main(int, char *[])
                           << "@" << pair.second.get_best_ask_qty() << std::endl;
             }
         }
+    }
+
+    // Final flush
+    if (write_counter > 0) {
+        outfile << csv_buffer.str();
+        outfile.flush();
     }
 
     close(epoll_fd);
