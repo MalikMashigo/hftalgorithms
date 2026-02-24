@@ -16,7 +16,9 @@ struct OrderInfo {
 
 class OrderBook {
 public:
-    OrderBook(uint32_t symbol_id) : symbol_(symbol_id), last_seq_num_(0) {}
+    OrderBook(uint32_t symbol_id) : symbol_(symbol_id), last_seq_num_(0) {
+        orders_.reserve(10000);  //Prevent reallocations
+    }
     
     void handle_new_order(const new_order* msg);
     void handle_delete_order(const delete_order* msg);
