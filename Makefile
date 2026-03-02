@@ -1,16 +1,21 @@
 CXX = g++
 CXXFLAGS = -std=c++11 -O3 -Wall -Wextra -Wno-unused-parameter
-TARGET = listener
-SOURCES = listener.cpp orderbook.cpp
-HEADERS = orderbook.h messages.h
 
-$(TARGET): $(SOURCES) $(HEADERS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(SOURCES)
+all: listener oe_client
+
+listener: listener.cpp orderbook.cpp orderbook.h messages.h
+	$(CXX) $(CXXFLAGS) -o listener listener.cpp orderbook.cpp
+
+oe_client: oe_client.cpp oe_messages.h oe_client.h
+	$(CXX) $(CXXFLAGS) -o oe_client oe_client.cpp
 
 clean:
-	rm -f $(TARGET) bbo_data.csv
+	rm -f listener oe_client bbo_data.csv oe_log.txt
 
-run: $(TARGET)
-	./$(TARGET)
+run_listener: listener
+	./listener
 
-.PHONY: clean run
+run_oe: oe_client
+	./oe_client
+
+.PHONY: all clean run_listener run_oe
