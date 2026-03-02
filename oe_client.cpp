@@ -15,6 +15,7 @@ OEClient::~OEClient() {
     if (sock_fd_ >= 0) close(sock_fd_);
 }
 
+// Establish TCP connection to exchange 
 bool OEClient::connect() {
     sock_fd_ = socket(AF_INET, SOCK_STREAM, 0);
     if (sock_fd_ < 0) return false;
@@ -32,6 +33,7 @@ bool OEClient::connect() {
     return true;
 }
 
+//Send login request
 bool OEClient::login(const char* username, const char* password, uint32_t client_id) {
     client_id_ = client_id;
 
@@ -97,6 +99,7 @@ bool OEClient::read_response(char* buf, size_t& out_len) {
 bool OEClient::wait_for_response() {
     char buf[256];
     size_t len;
+    //Loop until a terminal response is received
     while (true) {
         if (!read_response(buf, len)) return false;
         auto* hdr = reinterpret_cast<ndfex::oe::oe_response_header*>(buf);
@@ -210,7 +213,6 @@ int main() {
             std::string sym_input;
             uint32_t qty;
             int32_t price;
-            //std::string id_input;
             uint64_t oid;
 
             std::cout << "symbol (gold/blue): "; std::cin >> sym_input;
@@ -218,7 +220,6 @@ int main() {
             std::cout << "price: ";              std::cin >> price;
             std::cout << "order_id: "; std::cin >> oid;
 
-            // uint64_t oid = std::stoull(id_input);
 
             SIDE side = (command == "buy") ? SIDE::BUY : SIDE::SELL;
             client.send_new_order(oid, parse_symbol(sym_input), side, qty, price);
