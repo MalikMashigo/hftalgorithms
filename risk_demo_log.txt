@@ -1,0 +1,43 @@
+[RISK] === RiskManager started ===
+[RISK] Limits: max_qty_per_order=20 max_qty_per_side=200 max_exposure=50 max_position=30 max_ord/s=100 max_ord/seq=100 max_unacked=10 min_pnl=-200
+[RISK] BLOCKED new_order id=1 sym=1 side=BUY qty=5 px=0 reason=INVALID_PRICE
+[RISK] BLOCKED new_order id=2 sym=1 side=BUY qty=5 px=-1 reason=INVALID_PRICE
+[RISK] SENDING new_order id=3 sym=1 side=BUY qty=5 px=100
+[RISK] ACK new_order id=3
+[RISK] CANCEL_ALL: 1 open orders
+[RISK] CANCELLED id=3
+[RISK] BLOCKED new_order id=10 sym=1 side=BUY qty=21 px=100 reason=QTY_PER_ORDER_EXCEEDED
+[RISK] SENDING new_order id=11 sym=1 side=BUY qty=20 px=100
+[RISK] ACK new_order id=11
+[RISK] CANCEL_ALL: 1 open orders
+[RISK] CANCELLED id=11
+[RISK] SENDING new_order id=30 sym=1 side=BUY qty=10 px=100
+[RISK] ACK new_order id=30
+[RISK] FILL id=30 side=BUY qty=10 px=100 pos=10 pnl=0 [CLOSED]
+[RISK] SENDING new_order id=31 sym=1 side=BUY qty=20 px=100
+[RISK] ACK new_order id=31
+[RISK] SENDING new_order id=32 sym=1 side=BUY qty=20 px=100
+[RISK] ACK new_order id=32
+[RISK] BLOCKED new_order id=33 sym=1 side=BUY qty=1 px=100 reason=EXPOSURE_EXCEEDED
+[RISK] CANCEL_ALL: 2 open orders
+[RISK] CANCELLED id=32
+[RISK] CANCELLED id=31
+[RISK] SENDING new_order id=40 sym=1 side=BUY qty=20 px=100
+[RISK] ACK new_order id=40
+[RISK] FILL id=40 side=BUY qty=20 px=100 pos=30 pnl=0 [CLOSED]
+[RISK] BLOCKED new_order id=41 sym=1 side=BUY qty=1 px=100 reason=POSITION_LIMIT_WOULD_INCREASE
+[RISK] SENDING new_order id=42 sym=1 side=SELL qty=5 px=100
+[RISK] ACK new_order id=42
+[RISK] FILL id=42 side=SELL qty=5 px=100 pos=25 pnl=0 [CLOSED]
+[RISK] CANCEL_ALL: 0 open orders
+[RISK] SENDING new_order id=50 sym=1 side=BUY qty=5 px=100
+[RISK] ACK new_order id=50
+[RISK] SENDING new_order id=51 sym=1 side=SELL qty=3 px=100
+[RISK] ACK new_order id=51
+[RISK] CANCEL_ALL: 2 open orders
+[RISK] CANCELLED id=51
+[RISK] CANCELLED id=50
+[RISK] SHUTDOWN triggered: PNL -500 < min_pnl -200
+[RISK] CANCEL_ALL: 0 open orders
+[RISK] SHUTDOWN complete. All open orders cancelled.
+[RISK] BLOCKED new_order id=99 sym=1 side=BUY qty=1 px=100 reason=SYSTEM_SHUTDOWN
