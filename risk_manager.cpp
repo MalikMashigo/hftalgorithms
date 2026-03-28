@@ -5,8 +5,8 @@
 #include <cmath>
 #include <ctime>
 
-// ── Helper: enum → string ────────────────────────────────────────────────────
 
+// Converts a RiskResult enum to a human-readable string for logging
 const char* risk_result_str(RiskResult r) {
     switch (r) {
         case RiskResult::OK:                          return "OK";
@@ -26,8 +26,10 @@ const char* risk_result_str(RiskResult r) {
     }
 }
 
-// ── Constructor ──────────────────────────────────────────────────────────────
-
+// Initializes all sub-components with their limits derived from the RiskLimits
+// struct. The ordering here matters: position_tracker_ must be constructed
+// before exposure_tracker_ since exposure holds a const reference to position.
+// The log file is opened here and stays open for the lifetime of the manager
 RiskManager::RiskManager(IOrderSender& sender,
                          const RiskLimits& limits,
                          const std::string& log_path)
@@ -58,9 +60,21 @@ RiskManager::RiskManager(IOrderSender& sender,
     log(ss.str());
 }
 
-// ── Private helpers ──────────────────────────────────────────────────────────
-
+// Writes a timestamped line to both stdout and the log file
 void RiskManager::log(const std::string& msg) const {
+    // Get current time down to microseconds for a precise audit trail
+    auto now = std::chrono::system_clock::now();
+    auto now_t = std::chrono::system_clock::to_time_t(now);
+    auto us = std::chrono::duration_cast<std::chrono::microseconds>(
+        now.time_since_epoch()) % 1000000;
+
+    char time_buf[32];
+    std::strftime(time_buf, sizeof(time_buf), "%H:%M:%S", std::localtime(&now_t));
+
+    char full_buf[64];
+    std::snprintf(full_buf, sizeof(full_buf), "[%s.%06lld]", 
+                  time_buf, (long long)us.count());
+
     if (log_file_.is_open()) {
         log_file_ << "[RISK] " << msg << "\n";
         log_file_.flush();
@@ -68,6 +82,8 @@ void RiskManager::log(const std::string& msg) const {
     std::cout << "[RISK] " << msg << "\n";
 }
 
+// Resets the per-second order counter if a full second has elapsed since the window started
+// Called at the top of every send_new_order/modify_order so the window slides forward naturally without a background thread
 void RiskManager::refresh_rate_window() {
     auto now = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -78,18 +94,21 @@ void RiskManager::refresh_rate_window() {
     }
 }
 
+
+// Returns true if sending an order on this side would move the position further away from zero
 bool RiskManager::would_increase_abs_position(SIDE side) const {
     int32_t pos = position_tracker_.get_position();
-    // BUY increases |pos| when pos >= 0 (making us longer)
-    // SELL increases |pos| when pos <= 0 (making us shorter)
-    return (side == SIDE::BUY && pos >= 0) || (side == SIDE::SELL && pos <= 0);
+    if (pos == 0) return false;  // flat position, either side is fine
+    return (side == SIDE::BUY && pos > 0) || (side == SIDE::SELL && pos < 0);
 }
 
+// Checks all three rate-based limits in one place
 RiskResult RiskManager::check_rate_limits() const {
     if (orders_this_second_ >= limits_.max_orders_per_second)
         return RiskResult::RATE_LIMIT_PER_SECOND;
     if (orders_this_seq_num_ >= limits_.max_orders_per_seq_num)
         return RiskResult::RATE_LIMIT_PER_SEQ_NUM;
+    // This check is a placeholder for future async design
     if (unacked_orders_ >= limits_.max_unacked_orders)
         return RiskResult::UNACKED_LIMIT_EXCEEDED;
     return RiskResult::OK;
@@ -97,46 +116,59 @@ RiskResult RiskManager::check_rate_limits() const {
 
 // ── Pure risk checks (const, no mutation) ────────────────────────────────────
 
+// Validates a new order against all risk limits without sending anything
+// Since this does not change states it can be called safely from tests
 RiskResult RiskManager::check_new_order(uint64_t order_id, SIDE side,
                                          uint32_t qty, int32_t price) const {
+
+    // Block everything once shutdown is triggered
     if (is_shutdown_)
         return RiskResult::SYSTEM_SHUTDOWN;
 
+    // Price must be at least min_valid_price
     if (price < limits_.min_valid_price)
         return RiskResult::INVALID_PRICE;
 
+    // Single order qty cap — limits the impact of any one order
     if (qty > limits_.max_qty_per_order)
         return RiskResult::QTY_PER_ORDER_EXCEEDED;
 
-    // Total outstanding qty on this side must not exceed max_qty_per_side
+    // Total outstanding qty on this side — prevents flooding one side
+    // of the book with more qty than we're allowed to have working at once
     uint32_t side_outstanding = (side == SIDE::BUY)
         ? exposure_tracker_.get_outstanding_buy_qty()
         : exposure_tracker_.get_outstanding_sell_qty();
     if (side_outstanding + qty > limits_.max_qty_per_side)
         return RiskResult::QTY_PER_SIDE_EXCEEDED;
 
+    // Exposure = position + outstanding qty on a side
+    // This catches cases where position already contributes risk even if
+    // outstanding qty alone looks fine.
     if (exposure_tracker_.would_exceed_exposure(side, qty))
         return RiskResult::EXPOSURE_EXCEEDED;
 
-    // If already at the absolute position limit, block any order that would
-    // push the position further away from zero.
+    // Limit Check
+    // 1. if already at the limit, block any order that pushes further out
     if (position_tracker_.at_limit() && would_increase_abs_position(side))
         return RiskResult::POSITION_LIMIT_WOULD_INCREASE;
-
+    // 2. if not at limit, block if the full fill would exceed it                                       
     if (position_tracker_.would_exceed_limit(side, qty))
         return RiskResult::POSITION_LIMIT_EXCEEDED;
 
+    // Duplicate order IDs would confuse the exchange and our own tracking
     if (open_orders_.count(order_id))
         return RiskResult::DUPLICATE_ORDER_ID;
 
     return RiskResult::OK;
 }
 
+// Validates a modify order
 RiskResult RiskManager::check_modify_order(uint64_t order_id, SIDE new_side,
                                             uint32_t new_qty, int32_t new_price) const {
     if (is_shutdown_)
         return RiskResult::SYSTEM_SHUTDOWN;
 
+    // Must know the existing order to compute the delta
     auto it = open_orders_.find(order_id);
     if (it == open_orders_.end())
         return RiskResult::UNKNOWN_ORDER_ID;
@@ -150,7 +182,9 @@ RiskResult RiskManager::check_modify_order(uint64_t order_id, SIDE new_side,
         return RiskResult::QTY_PER_ORDER_EXCEEDED;
 
     if (new_side == existing.side) {
-        // Same side: only the incremental increase in qty adds new risk
+        // Same side modify: only an increase in qty adds new risk.
+        // Decreasing qty on the same side always reduces exposure, so it is
+        // unconditionally safe from a risk perspective.
         if (new_qty > existing.qty) {
             uint32_t delta = new_qty - existing.qty;
             uint32_t side_outstanding = (new_side == SIDE::BUY)
@@ -165,7 +199,6 @@ RiskResult RiskManager::check_modify_order(uint64_t order_id, SIDE new_side,
             if (position_tracker_.would_exceed_limit(new_side, delta))
                 return RiskResult::POSITION_LIMIT_EXCEEDED;
         }
-        // Decreasing qty on same side is always safe from a risk perspective
     } else {
         // Side flip: treat full new_qty as new exposure (conservative)
         uint32_t side_outstanding = (new_side == SIDE::BUY)
@@ -218,6 +251,8 @@ bool RiskManager::send_new_order(uint64_t order_id, uint32_t symbol,
         log(ss.str());
     }
 
+    // unacked_orders_ will always be 0 or 1 because send_new_order blocks
+    // until ACK/reject. This variable is a placeholder for future async implementation.
     ++unacked_orders_;
     ++orders_this_second_;
     ++orders_this_seq_num_;

@@ -137,8 +137,9 @@ void test_pnl_mark_to_market() {
     pnl.on_fill(SIDE::BUY, 10, 100);  // long 10, cost=1000
     pnl.update_mark_price(105);
 
-    // realized = 0 − 1000 = −1000; unrealized = 10×105 = 1050; total = 50
-    EXPECT_NEAR(pnl.get_unrealized_pnl(), 1050.0, 1e-9);
+    // realized = 0 − 1000 = −1000
+    // unrealized = position * (mark_price - avg_cost) = 10 * (105 - 100) = 50
+    EXPECT_NEAR(pnl.get_unrealized_pnl(), 50.0, 1e-9);
     EXPECT_NEAR(pnl.get_total_pnl(),       50.0, 1e-9);
     EXPECT_FALSE(pnl.below_min_pnl());
 }
