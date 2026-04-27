@@ -35,6 +35,12 @@ public:
     // IOrderSender implementation
     bool send_new_order(uint64_t order_id, uint32_t symbol, SIDE side,
                         uint32_t qty, int32_t price) override;
+    
+    void send_new_order_no_wait(uint64_t order_id, uint32_t symbol,
+                             SIDE side, uint32_t qty, int32_t price);\
+
+    bool wait_for_response();
+     
     bool delete_order(uint64_t order_id) override;
     bool modify_order(uint64_t order_id, SIDE side,
                       uint32_t qty, int32_t price) override;
@@ -68,7 +74,6 @@ private:
 
     void send_raw(const void* data, size_t len);
     bool read_response(char* buf, size_t& len);
-    bool wait_for_response();
     void log_message(const char* direction, const void* data, size_t len);
 };
 

@@ -173,6 +173,26 @@ bool OEClient::send_new_order(uint64_t order_id, uint32_t symbol,
     return wait_for_response();
 }
 
+void OEClient::send_new_order_no_wait(uint64_t order_id, uint32_t symbol,
+                                       SIDE side, uint32_t qty, int32_t price) {
+    ndfex::oe::new_order msg{};
+    msg.header.length     = sizeof(msg);
+    msg.header.msg_type   = (uint8_t)ndfex::oe::MSG_TYPE::NEW_ORDER;
+    msg.header.version    = ndfex::oe::OE_PROTOCOL_VERSION;
+    msg.header.seq_num    = ++seq_num_;
+    msg.header.client_id  = client_id_;
+    msg.header.session_id = session_id_;
+    msg.order_id          = order_id;
+    msg.symbol            = symbol;
+    msg.side              = side;
+    msg.quantity          = qty;
+    msg.price             = price;
+    msg.flags             = 0;
+
+    send_raw(&msg, sizeof(msg));
+    // No wait_for_response() — caller collects ACKs separately
+}
+
 bool OEClient::delete_order(uint64_t order_id) {
     ndfex::oe::delete_order msg{};
     msg.header.length     = sizeof(msg);
@@ -215,59 +235,59 @@ void OEClient::cancel_all_open_orders() {
 }
 
 
-int main() {
-    OEClient client("192.168.13.100", 1234);
-    if (!client.connect()) return 1;
-    if (!client.login("group8", "Uangjrty", 8)) return 1;
+// int main() {
+//     OEClient client("192.168.13.100", 1234);
+//     if (!client.connect()) return 1;
+//     if (!client.login("group8", "Uangjrty", 8)) return 1;
 
-    std::string command;
+//     std::string command;
 
-    auto parse_symbol = [](const std::string& s) -> uint32_t {
-        if (s == "gold" || s == "GOLD") return 1;
-        if (s == "blue" || s == "BLUE") return 2;
-        return std::stoul(s);
-    };
+//     auto parse_symbol = [](const std::string& s) -> uint32_t {
+//         if (s == "gold" || s == "GOLD") return 1;
+//         if (s == "blue" || s == "BLUE") return 2;
+//         return std::stoul(s);
+//     };
 
-    while (true) {
-        std::cout << "Enter order (buy/sell/delete/modify/cancelall/quit): ";
-        std::cin >> command;
+//     while (true) {
+//         std::cout << "Enter order (buy/sell/delete/modify/cancelall/quit): ";
+//         std::cin >> command;
 
-        if (command == "quit") break;
+//         if (command == "quit") break;
 
-        if (command == "cancelall") {
-            client.cancel_all_open_orders();
-        } else if (command == "buy" || command == "sell") {
-            std::string sym_input;
-            uint32_t qty;
-            int32_t price;
-            uint64_t oid;
+//         if (command == "cancelall") {
+//             client.cancel_all_open_orders();
+//         } else if (command == "buy" || command == "sell") {
+//             std::string sym_input;
+//             uint32_t qty;
+//             int32_t price;
+//             uint64_t oid;
 
-            std::cout << "symbol (gold/blue): "; std::cin >> sym_input;
-            std::cout << "qty: ";                std::cin >> qty;
-            std::cout << "price: ";              std::cin >> price;
-            std::cout << "order_id: ";           std::cin >> oid;
+//             std::cout << "symbol (gold/blue): "; std::cin >> sym_input;
+//             std::cout << "qty: ";                std::cin >> qty;
+//             std::cout << "price: ";              std::cin >> price;
+//             std::cout << "order_id: ";           std::cin >> oid;
 
-            SIDE side = (command == "buy") ? SIDE::BUY : SIDE::SELL;
-            client.send_new_order(oid, parse_symbol(sym_input), side, qty, price);
-        } else if (command == "delete") {
-            uint64_t oid;
-            std::cout << "order_id: "; std::cin >> oid;
-            client.delete_order(oid);
-        } else if (command == "modify") {
-            uint64_t oid;
-            uint32_t qty;
-            int32_t price;
-            std::string side_input;
+//             SIDE side = (command == "buy") ? SIDE::BUY : SIDE::SELL;
+//             client.send_new_order(oid, parse_symbol(sym_input), side, qty, price);
+//         } else if (command == "delete") {
+//             uint64_t oid;
+//             std::cout << "order_id: "; std::cin >> oid;
+//             client.delete_order(oid);
+//         } else if (command == "modify") {
+//             uint64_t oid;
+//             uint32_t qty;
+//             int32_t price;
+//             std::string side_input;
 
-            std::cout << "order_id: ";        std::cin >> oid;
-            std::cout << "side (buy/sell): "; std::cin >> side_input;
-            std::cout << "qty: ";             std::cin >> qty;
-            std::cout << "price: ";           std::cin >> price;
+//             std::cout << "order_id: ";        std::cin >> oid;
+//             std::cout << "side (buy/sell): "; std::cin >> side_input;
+//             std::cout << "qty: ";             std::cin >> qty;
+//             std::cout << "price: ";           std::cin >> price;
 
-            SIDE side = (side_input == "buy") ? SIDE::BUY : SIDE::SELL;
-            client.modify_order(oid, side, qty, price);
-        }
-    }
+//             SIDE side = (side_input == "buy") ? SIDE::BUY : SIDE::SELL;
+//             client.modify_order(oid, side, qty, price);
+//         }
+//     }
 
-    return 0;
-}
+//     return 0;
+// }
