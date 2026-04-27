@@ -4,6 +4,12 @@
 
 void OrderBook::handle_new_order(const new_order* msg) {
     if (msg->header.msg_type != MSG_TYPE::NEW_ORDER) return;
+
+     // Validate side
+    if (msg->side != SIDE::BUY && msg->side != SIDE::SELL) {
+        std::cerr << "ERROR: Invalid side for order " << msg->order_id << "\n";
+        return;
+    }
     
     // Check for duplicate order
     if (orders_.find(msg->order_id) != orders_.end()) {

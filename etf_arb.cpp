@@ -1,76 +1,61 @@
 #include "etf_arb.h"
 #include <iostream>
 #include <algorithm>
-#include <array>
 
-ETFArb::ETFArb(SymbolManager& sm, OEClient& oe, ETFClient& etf)
-    : sm_(sm), oe_(oe), etf_(etf) {
-        oe_.set_on_fill([this](const FillEvent& f) {
+ETFArb::ETFArb(SymbolManager& sm, OEClient& oe, ETFClient& etf,
+               std::atomic<bool>& shutdown)
+    : sm_(sm), oe_(oe), etf_(etf), global_shutdown_(shutdown)
+{
+    oe_.set_on_fill([this](const FillEvent& f) {
         auto it = order_map_.find(f.order_id);
         if (it == order_map_.end()) return;
-        sm_.on_fill(it->second.first,   // symbol
-                    it->second.second,  // side
-                    f.qty,
-                    f.price);
+        sm_.on_fill(it->second.first, it->second.second, f.qty, f.price);
         if (f.closed) order_map_.erase(it);
     });
-    }
-
-// ── Main loop ─────────────────────────────────────────────────────────────────
-// Spins as fast as possible reading snapshots and checking for arb.
-// No sleep — every microsecond counts.
+}
 
 void ETFArb::run() {
-    if constexpr (DEBUG_LOG) {
-        std::cout << "[ETFArb] Starting arb loop\n";
-    }
+    std::cout << "[ETFArb] Starting arb loop\n";
 
     while (running_.load(std::memory_order_acquire)) {
 
-        // Hard stop if PnL approaching the -5000 floor
         if (sm_.pnl_near_limit()) {
-            std::cerr << "[ETFArb] PnL near limit — halting all trading\n";
+            std::cerr << "[ETFArb] PnL near limit — SHUTTING DOWN\n";
             oe_.cancel_all_open_orders();
+            global_shutdown_.store(true, std::memory_order_release);
             return;
         }
 
         ArbSnapshot snap = sm_.snapshot();
 
-        // ADD THIS TEMPORARILY
+        // Debug — remove after confirming trades are firing
         static int tick = 0;
-        if (++tick % 1000000 == 0) {
-           bool creation_viable  = !snap.any_dorm_ask_missing && 
-                             snap.undy_best_bid_price > 0 &&
-                            (snap.undy_best_bid_price - snap.nav_ask) > MIN_EDGE;
-            bool redemption_viable = !snap.any_dorm_bid_missing && 
-                              snap.undy_best_ask_price > 0 &&
-                             (snap.nav_bid - snap.undy_best_ask_price) > MIN_EDGE;
-
-            std::cout << "[ARB] creation_viable=" << creation_viable
-              << " redemption_viable="    << redemption_viable
-              << " creation_edge="        << (snap.undy_best_bid_price - snap.nav_ask)
-              << " redemption_edge="      << (snap.nav_bid - snap.undy_best_ask_price)
-              << "\n";
+        if (++tick % 100000 == 0) {
+            bool creation_viable  = !snap.any_dorm_ask_missing &&
+                                     snap.undy_best_bid_price > 0 &&
+                                    (snap.undy_best_bid_price - snap.nav_ask) > MIN_EDGE;
+            bool redemption_viable = !snap.any_dorm_bid_missing &&
+                                      snap.undy_best_ask_price > 0 &&
+                                     (snap.nav_bid - snap.undy_best_ask_price) > MIN_EDGE;
+            std::cout << "[ARB] creation_viable="  << creation_viable
+                      << " redemption_viable="     << redemption_viable
+                      << " creation_edge="         << (snap.undy_best_bid_price - snap.nav_ask)
+                      << " redemption_edge="       << (snap.nav_bid - snap.undy_best_ask_price)
+                      << " missing_asks="          << snap.any_dorm_ask_missing
+                      << "\n";
+            for (size_t i = 0; i < DORM_IDS.size(); ++i)
+                if (snap.dorms[i].best_ask_price == 0)
+                    std::cout << "[ARB] missing ask: sym=" << DORM_IDS[i] << "\n";
         }
 
-        // Try both directions on every tick
-        // creation first (typically higher edge when UNDY is overpriced)
-        if (!try_creation_arb(snap)) {
+        if (!try_creation_arb(snap))
             try_redemption_arb(snap);
-        }
     }
 
-    if constexpr (DEBUG_LOG) {
     std::cout << "[ETFArb] Loop stopped\n";
-    }
 }
 
-// ── Creation arb ──────────────────────────────────────────────────────────────
-// Opportunity: UNDY bid > sum(dorm asks) + MIN_EDGE
-// Action:      buy all 10 dorms at ask → /create → sell UNDY at bid
-
 bool ETFArb::try_creation_arb(const ArbSnapshot& snap) {
-    // Bail early if any dorm has no ask or UNDY has no bid
     if (snap.any_dorm_ask_missing || snap.undy_best_bid_price == 0) return false;
 
     int32_t edge = snap.undy_best_bid_price - snap.nav_ask;
@@ -79,70 +64,61 @@ bool ETFArb::try_creation_arb(const ArbSnapshot& snap) {
     int32_t qty = creation_qty(snap);
     if (qty <= 0) return false;
 
-    if constexpr (DEBUG_LOG) {
-        std::cout << "[ETFArb] CREATION arb: edge=" << edge
-              << " qty=" << qty
-              << " nav_ask=" << snap.nav_ask
-              << " undy_bid=" << snap.undy_best_bid_price << "\n";
-    }
+    std::cout << "[ETFArb] CREATION arb: edge=" << edge
+              << " qty=" << qty << "\n";
 
-    // ── Step 1: fire all 10 dorm buys without waiting ─────────────────────
+    // Step 1: fire all 10 dorm buys
     std::array<uint64_t, 10> order_ids;
     for (size_t i = 0; i < DORM_IDS.size(); ++i) {
         order_ids[i] = next_id();
-        order_map_[order_ids[i]] = {DORM_IDS[i], SIDE::BUY}; 
-        oe_.send_new_order_no_wait(order_ids[i],
-                                   DORM_IDS[i],
-                                   SIDE::BUY,
-                                   static_cast<uint32_t>(qty),
+        order_map_[order_ids[i]] = {DORM_IDS[i], SIDE::BUY};
+        oe_.send_new_order_no_wait(order_ids[i], DORM_IDS[i],
+                                   SIDE::BUY, static_cast<uint32_t>(qty),
                                    snap.dorms[i].best_ask_price);
     }
 
-    // ── Step 2: collect all 10 ACKs ───────────────────────────────────────
+    // Step 2: collect ACKs
     int filled = 0;
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 10; ++i)
         if (oe_.wait_for_response()) ++filled;
-    }
 
     if (filled < 10) {
-        // Some legs rejected — we have a partial position.
-        // This is the main leg risk. Log it and let the arb loop
-        // naturally unwind via the redemption direction.
-        std::cerr << "[ETFArb] WARNING: only " << filled
-                  << "/10 dorm legs filled. Partial position held.\n";
-        return true;  // still counts as attempted
-    }
-
-    // ── Step 3: create UNDY ───────────────────────────────────────────────
-    ETFResult r = etf_.create(qty);
-    if (!r.success) {
-        std::cerr << "[ETFArb] /create failed: " << r.message << "\n";
+        std::cerr << "[ETFArb] Only " << filled << "/10 legs filled — unwinding\n";
+        unwind_dorm_longs();
         return true;
     }
 
-    if constexpr (DEBUG_LOG) {
-        std::cout << "[ETFArb] /create OK, undy_balance=" << r.undy_balance << "\n";
+    // Step 3: pre-flight check before /create
+    bool all_filled = true;
+    for (size_t i = 0; i < DORM_IDS.size(); ++i) {
+        if (sm_.get_position(DORM_IDS[i]) < qty) {
+            std::cerr << "[ETFArb] Pre-flight failed: sym=" << DORM_IDS[i] << "\n";
+            all_filled = false;
+        }
+    }
+    if (!all_filled) {
+        unwind_dorm_longs();
+        return true;
     }
 
-    // ── Step 4: sell UNDY at bid ──────────────────────────────────────────
+    // Step 4: create UNDY
+    ETFResult r = etf_.create(qty);
+    if (!r.success) {
+        std::cerr << "[ETFArb] /create failed: " << r.message << " — unwinding\n";
+        unwind_dorm_longs();
+        return true;
+    }
+
+    std::cout << "[ETFArb] /create OK, undy_balance=" << r.undy_balance << "\n";
+
+    // Step 5: sell UNDY
     uint64_t undy_oid = next_id();
-    order_map_[undy_oid] = {SYM_UNDY, SIDE::SELL}; 
-    bool sold = oe_.send_new_order(undy_oid,
-                                   SYM_UNDY,
-                                   SIDE::SELL,
-                                   static_cast<uint32_t>(qty),
-                                   snap.undy_best_bid_price);
-
-    if (!sold) {
-        std::cerr << "[ETFArb] WARNING: UNDY sell rejected — holding UNDY inventory\n";
-    }
-
+    order_map_[undy_oid] = {SYM_UNDY, SIDE::SELL};
+    oe_.send_new_order(undy_oid, SYM_UNDY,
+                       SIDE::SELL, static_cast<uint32_t>(qty),
+                       snap.undy_best_bid_price);
     return true;
 }
-
-// ── Redemption arb ────────────────────────────────────────────────────────────
-// Opportunity: sum(dorm bids) - UNDY ask > MIN_EDGE
-// Action:      buy UNDY at ask → /redeem → sell all 10 dorms at bid
 
 bool ETFArb::try_redemption_arb(const ArbSnapshot& snap) {
     if (snap.any_dorm_bid_missing || snap.undy_best_ask_price == 0) return false;
@@ -153,96 +129,78 @@ bool ETFArb::try_redemption_arb(const ArbSnapshot& snap) {
     int32_t qty = redemption_qty(snap);
     if (qty <= 0) return false;
 
-    if constexpr (DEBUG_LOG) {
-        std::cout << "[ETFArb] REDEMPTION arb: edge=" << edge
-              << " qty=" << qty
-              << " nav_bid=" << snap.nav_bid
-              << " undy_ask=" << snap.undy_best_ask_price << "\n";
-    }
+    std::cout << "[ETFArb] REDEMPTION arb: edge=" << edge
+              << " qty=" << qty << "\n";
 
-    // ── Step 1: buy UNDY ──────────────────────────────────────────────────
+    // Step 1: buy UNDY
     uint64_t undy_oid = next_id();
-    order_map_[undy_oid] = {SYM_UNDY, SIDE::BUY};  
-    bool bought = oe_.send_new_order(undy_oid,
-                                     SYM_UNDY,
-                                     SIDE::BUY,
-                                     static_cast<uint32_t>(qty),
+    order_map_[undy_oid] = {SYM_UNDY, SIDE::BUY};
+    bool bought = oe_.send_new_order(undy_oid, SYM_UNDY,
+                                     SIDE::BUY, static_cast<uint32_t>(qty),
                                      snap.undy_best_ask_price);
     if (!bought) {
         std::cerr << "[ETFArb] UNDY buy rejected\n";
         return false;
     }
 
-    // ── Step 2: redeem UNDY → underlyings ────────────────────────────────
+    // Step 2: redeem
     ETFResult r = etf_.redeem(qty);
     if (!r.success) {
         std::cerr << "[ETFArb] /redeem failed: " << r.message << "\n";
         return true;
     }
 
-    if constexpr (DEBUG_LOG) {
-        std::cout << "[ETFArb] /redeem OK, undy_balance=" << r.undy_balance << "\n";
-    }
+    std::cout << "[ETFArb] /redeem OK, undy_balance=" << r.undy_balance << "\n";
 
-    // ── Step 3: sell all 10 dorms simultaneously ──────────────────────────
+    // Step 3: sell all 10 dorms
     std::array<uint64_t, 10> order_ids;
     for (size_t i = 0; i < DORM_IDS.size(); ++i) {
         order_ids[i] = next_id();
         order_map_[order_ids[i]] = {DORM_IDS[i], SIDE::SELL};
-        oe_.send_new_order_no_wait(order_ids[i],
-                                   DORM_IDS[i],
-                                   SIDE::SELL,
-                                   static_cast<uint32_t>(qty),
+        oe_.send_new_order_no_wait(order_ids[i], DORM_IDS[i],
+                                   SIDE::SELL, static_cast<uint32_t>(qty),
                                    snap.dorms[i].best_bid_price);
     }
-
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 10; ++i)
         oe_.wait_for_response();
-    }
 
     return true;
 }
 
-// ── Position-aware qty calculation ────────────────────────────────────────────
+void ETFArb::unwind_dorm_longs() {
+    for (size_t i = 0; i < DORM_IDS.size(); ++i) {
+        int32_t pos = sm_.get_position(DORM_IDS[i]);
+        if (pos <= 0) continue;
+        int32_t bid = sm_.best_bid_price(DORM_IDS[i]);
+        if (bid <= 0) continue;
+        uint64_t oid = next_id();
+        order_map_[oid] = {DORM_IDS[i], SIDE::SELL};
+        oe_.send_new_order_no_wait(oid, DORM_IDS[i],
+                                   SIDE::SELL,
+                                   static_cast<uint32_t>(pos), bid);
+    }
+    for (size_t i = 0; i < DORM_IDS.size(); ++i)
+        oe_.wait_for_response();
+}
 
 int32_t ETFArb::creation_qty(const ArbSnapshot& snap) const {
     int32_t qty = static_cast<int32_t>(snap.undy_best_bid_qty);
-
     for (size_t i = 0; i < DORM_IDS.size(); ++i) {
         const auto& d = snap.dorms[i];
-
-        // Can't buy more than available depth
         qty = std::min(qty, static_cast<int32_t>(d.best_ask_qty));
-
-        // Can't exceed position limit on any dorm leg
-        int32_t room = SymbolManager::POSITION_LIMIT - d.position;
-        qty = std::min(qty, room);
+        qty = std::min(qty, SymbolManager::POSITION_LIMIT - d.position);
     }
-
-    // Can't exceed UNDY position limit on the sell side
-    int32_t undy_room = SymbolManager::POSITION_LIMIT + snap.undy_position;
-    qty = std::min(qty, undy_room);
-
+    qty = std::min(qty, SymbolManager::POSITION_LIMIT + snap.undy_position);
     return qty;
 }
 
 int32_t ETFArb::redemption_qty(const ArbSnapshot& snap) const {
     int32_t qty = static_cast<int32_t>(snap.undy_best_ask_qty);
-
-    // Can't buy more UNDY than position limit allows
-    int32_t undy_room = SymbolManager::POSITION_LIMIT - snap.undy_position;
-    qty = std::min(qty, undy_room);
-
+    qty = std::min(qty, SymbolManager::POSITION_LIMIT - snap.undy_position);
     for (size_t i = 0; i < DORM_IDS.size(); ++i) {
         const auto& d = snap.dorms[i];
-
-        // Can't sell more than available bid depth
         qty = std::min(qty, static_cast<int32_t>(d.best_bid_qty));
-
-        // Can't go shorter than -POSITION_LIMIT on any dorm
-        int32_t room = SymbolManager::POSITION_LIMIT + d.position;
-        qty = std::min(qty, room);
+        qty = std::min(qty, SymbolManager::POSITION_LIMIT + d.position);
     }
-
     return qty;
 }
