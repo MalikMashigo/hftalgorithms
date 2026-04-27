@@ -72,5 +72,5 @@ private:
     static std::string base64_encode(const std::string& input);
 
     // Minimal JSON parser for the two API response shapes.
-    static ETFResult parse_response(const std::string& body);
+    static ETFResult parse_response(const std::string& body, bool http_ok);
 };

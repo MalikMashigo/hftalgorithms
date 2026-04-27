@@ -1,0 +1,569 @@
+Connected to 192.168.13.100:1234
+Login successful, session_id: 6254706081397190026
+Waiting 3s for market data snapshot...
+[Listener] Joined multicast 239.0.0.1:12345
+[Listener] Joined multicast 239.0.0.2:12345
+[Listener] Starting market data feed...
+[Listener] Snapshot: symbol=13 seq=177858888 bids=413 asks=337
+[Listener] Snapshot: symbol=12 seq=177858888 bids=1234 asks=436
+[Listener] Snapshot: symbol=11 seq=177858888 bids=732 asks=317
+[Listener] Snapshot: symbol=10 seq=177858888 bids=841 asks=318
+[Listener] Snapshot: symbol=13 seq=177859268 bids=410 asks=334
+[Listener] Snapshot: symbol=12 seq=177859268 bids=1234 asks=436
+[Listener] Snapshot: symbol=11 seq=177859268 bids=732 asks=317
+[Listener] Snapshot: symbol=10 seq=177859268 bids=841 asks=318
+[Listener] Snapshot: symbol=7 seq=177859268 bids=1065 asks=726
+[Listener] Snapshot: symbol=6 seq=177859268 bids=500 asks=1052
+[Listener] Snapshot: symbol=5 seq=177859268 bids=363 asks=542
+[Listener] Snapshot: symbol=2 seq=177859268 bids=516 asks=574
+[Listener] Snapshot: symbol=13 seq=177859658 bids=413 asks=337
+[Listener] Snapshot: symbol=12 seq=177859658 bids=1233 asks=436
+[Listener] Snapshot: symbol=11 seq=177859658 bids=731 asks=317
+[Listener] Snapshot: symbol=10 seq=177859658 bids=840 asks=318
+[Listener] Snapshot: symbol=8 seq=177859658 bids=578 asks=559
+[Listener] Snapshot: symbol=7 seq=177859658 bids=1066 asks=727
+[Listener] Snapshot: symbol=6 seq=177859658 bids=500 asks=1052
+[Listener] Snapshot: symbol=5 seq=177859658 bids=363 asks=542
+[Listener] Snapshot: symbol=3 seq=177859658 bids=444 asks=454
+[Listener] Snapshot: symbol=1 seq=177859658 bids=877 asks=257
+[Listener] Snapshot: symbol=13 seq=177860047 bids=413 asks=337
+[Listener] Snapshot: symbol=12 seq=177860047 bids=1233 asks=436
+[Listener] Snapshot: symbol=11 seq=177860047 bids=730 asks=316
+[Listener] Snapshot: symbol=10 seq=177860047 bids=840 asks=318
+[Listener] Snapshot: symbol=13 seq=177860387 bids=411 asks=335
+[Listener] Snapshot: symbol=12 seq=177860387 bids=1233 asks=436
+[Listener] Snapshot: symbol=11 seq=177860387 bids=731 asks=317
+[Listener] Snapshot: symbol=10 seq=177860387 bids=841 asks=318
+[Listener] Snapshot: symbol=9 seq=177860387 bids=943 asks=151
+[Listener] Snapshot: symbol=6 seq=177860387 bids=499 asks=1053
+[Listener] Snapshot: symbol=3 seq=177860387 bids=444 asks=454
+[Listener] Snapshot: symbol=1 seq=177860387 bids=878 asks=257
+[Listener] Snapshot: symbol=13 seq=177860739 bids=413 asks=337
+[Listener] Snapshot: symbol=12 seq=177860739 bids=1233 asks=436
+[Listener] Snapshot: symbol=11 seq=177860739 bids=731 asks=317
+[Listener] Snapshot: symbol=10 seq=177860739 bids=841 asks=318
+[ETFArb] Starting arb loop
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=915 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-20 redemption_edge=-210
+[Listener] Snapshot: symbol=13 seq=177861080 bids=413 asks=336
+[Listener] Snapshot: symbol=12 seq=177861080 bids=1233 asks=436
+[Listener] Snapshot: symbol=11 seq=177861080 bids=731 asks=317
+[Listener] Snapshot: symbol=10 seq=177861080 bids=841 asks=318
+[Listener] Snapshot: symbol=9 seq=177861080 bids=943 asks=152
+[Listener] Snapshot: symbol=8 seq=177861080 bids=578 asks=559
+[Listener] Snapshot: symbol=7 seq=177861080 bids=1066 asks=728
+[Listener] Snapshot: symbol=6 seq=177861080 bids=499 asks=1053
+[Listener] Snapshot: symbol=5 seq=177861080 bids=361 asks=541
+[Listener] Snapshot: symbol=4 seq=177861080 bids=349 asks=418
+[Listener] Snapshot: symbol=3 seq=177861080 bids=444 asks=454
+[Listener] Snapshot: symbol=2 seq=177861080 bids=518 asks=577
+[Listener] Snapshot: symbol=1 seq=177861080 bids=877 asks=257
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=4850 redemption_edge=-215
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2590 redemption_edge=-215
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1440 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1440 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=245 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-40 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-40 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-45 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-25 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-25 redemption_edge=-200
+[Listener] Snapshot: symbol=13 seq=177861461 bids=411 asks=334
+[Listener] Snapshot: symbol=12 seq=177861461 bids=1233 asks=436
+[Listener] Snapshot: symbol=11 seq=177861461 bids=731 asks=316
+[Listener] Snapshot: symbol=10 seq=177861461 bids=841 asks=318
+[Listener] Snapshot: symbol=9 seq=177861461 bids=943 asks=151
+[Listener] Snapshot: symbol=8 seq=177861461 bids=579 asks=560
+[Listener] Snapshot: symbol=7 seq=177861461 bids=1066 asks=728
+[Listener] Snapshot: symbol=6 seq=177861461 bids=499 asks=1053
+[Listener] Snapshot: symbol=5 seq=177861461 bids=363 asks=543
+[Listener] Snapshot: symbol=4 seq=177861461 bids=349 asks=418
+[Listener] Snapshot: symbol=3 seq=177861461 bids=444 asks=454
+[Listener] Snapshot: symbol=2 seq=177861461 bids=518 asks=576
+[Listener] Snapshot: symbol=1 seq=177861461 bids=878 asks=257
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=5680 redemption_edge=5520
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=5680 redemption_edge=5520
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3915 redemption_edge=5520
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3915 redemption_edge=5520
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2930 redemption_edge=5525
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2935 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2370 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1610 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=285 redemption_edge=-195
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=280 redemption_edge=-195
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=280 redemption_edge=-215
+[Listener] Snapshot: symbol=13 seq=177861851 bids=413 asks=337
+[Listener] Snapshot: symbol=12 seq=177861851 bids=1232 asks=435
+[Listener] Snapshot: symbol=11 seq=177861851 bids=731 asks=316
+[Listener] Snapshot: symbol=10 seq=177861851 bids=841 asks=318
+[Listener] Snapshot: symbol=9 seq=177861851 bids=943 asks=151
+[Listener] Snapshot: symbol=8 seq=177861851 bids=579 asks=560
+[Listener] Snapshot: symbol=7 seq=177861851 bids=1065 asks=728
+[Listener] Snapshot: symbol=6 seq=177861851 bids=499 asks=1052
+[Listener] Snapshot: symbol=5 seq=177861851 bids=363 asks=543
+[Listener] Snapshot: symbol=4 seq=177861851 bids=349 asks=418
+[Listener] Snapshot: symbol=3 seq=177861851 bids=444 asks=454
+[Listener] Snapshot: symbol=2 seq=177861851 bids=518 asks=576
+[Listener] Snapshot: symbol=1 seq=177861851 bids=877 asks=256
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2995 redemption_edge=-215
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3140 redemption_edge=-215
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1255 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-80 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-55 redemption_edge=-210
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-45 redemption_edge=-210
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-45 redemption_edge=-210
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-55 redemption_edge=-210
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-35 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-40 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-25 redemption_edge=-195
+[Listener] Snapshot: symbol=13 seq=177862229 bids=411 asks=336
+[Listener] Snapshot: symbol=12 seq=177862229 bids=1233 asks=437
+[Listener] Snapshot: symbol=11 seq=177862229 bids=730 asks=316
+[Listener] Snapshot: symbol=10 seq=177862229 bids=840 asks=318
+[Listener] Snapshot: symbol=9 seq=177862229 bids=942 asks=151
+[Listener] Snapshot: symbol=8 seq=177862229 bids=579 asks=561
+[Listener] Snapshot: symbol=7 seq=177862229 bids=1064 asks=728
+[Listener] Snapshot: symbol=6 seq=177862229 bids=499 asks=1053
+[Listener] Snapshot: symbol=3 seq=177862229 bids=444 asks=455
+[Listener] Snapshot: symbol=1 seq=177862229 bids=877 asks=258
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=5210 redemption_edge=5525
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2955 redemption_edge=-195
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2955 redemption_edge=-195
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2240 redemption_edge=-195
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1555 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1300 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1865 redemption_edge=-200
+ERROR: Book is crossed after new order!
+
+=== Order Book (Symbol 12) ===
+ASKS:
+  750 @ 220
+  745 @ 190
+  740 @ 33
+---
+  740 @ 47
+  735 @ 227
+  730 @ 125
+  725 @ 223
+  720 @ 265
+  715 @ 300
+BIDS:
+Best Bid: 740 @ 47
+Best Ask: 740 @ 33
+[PnL] total=0 | positions: 
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1320 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1315 redemption_edge=-195
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1310 redemption_edge=-195
+ERROR: Book is crossed after new order!
+
+=== Order Book (Symbol 12) ===
+ASKS:
+  750 @ 150
+  745 @ 90
+  740 @ 33
+---
+  740 @ 47
+  735 @ 227
+  730 @ 125
+  725 @ 223
+  720 @ 165
+  715 @ 330
+BIDS:
+Best Bid: 740 @ 47
+Best Ask: 740 @ 33
+ERROR: Book is crossed after new order!
+
+=== Order Book (Symbol 12) ===
+ASKS:
+  750 @ 150
+  745 @ 90
+  740 @ 133
+---
+  740 @ 47
+  735 @ 227
+  730 @ 125
+  725 @ 223
+  720 @ 165
+  715 @ 330
+BIDS:
+Best Bid: 740 @ 47
+Best Ask: 740 @ 133
+ERROR: Book is crossed after new order!
+
+=== Order Book (Symbol 12) ===
+ASKS:
+  750 @ 150
+  745 @ 90
+  740 @ 133
+---
+  740 @ 47
+  735 @ 227
+  730 @ 125
+  725 @ 223
+  720 @ 165
+  715 @ 330
+  710 @ 70
+BIDS:
+Best Bid: 740 @ 47
+Best Ask: 740 @ 133
+ERROR: Book is crossed after new order!
+
+=== Order Book (Symbol 12) ===
+ASKS:
+  750 @ 150
+  745 @ 160
+  740 @ 133
+---
+  740 @ 47
+  735 @ 227
+  730 @ 125
+  725 @ 223
+  720 @ 165
+  715 @ 330
+  710 @ 70
+BIDS:
+Best Bid: 740 @ 47
+Best Ask: 740 @ 133
+[Listener] Snapshot: symbol=13 seq=177862580 bids=413 asks=337
+[Listener] Snapshot: symbol=12 seq=177862580 bids=1231 asks=437
+[Listener] Snapshot: symbol=11 seq=177862580 bids=730 asks=316
+[Listener] Snapshot: symbol=10 seq=177862580 bids=840 asks=318
+[Listener] Snapshot: symbol=9 seq=177862580 bids=943 asks=152
+[Listener] Snapshot: symbol=8 seq=177862580 bids=579 asks=561
+[Listener] Snapshot: symbol=7 seq=177862580 bids=1065 asks=729
+[Listener] Snapshot: symbol=6 seq=177862580 bids=499 asks=1053
+[Listener] Snapshot: symbol=5 seq=177862580 bids=364 asks=544
+[Listener] Snapshot: symbol=4 seq=177862580 bids=349 asks=419
+[Listener] Snapshot: symbol=3 seq=177862580 bids=444 asks=455
+[Listener] Snapshot: symbol=2 seq=177862580 bids=517 asks=578
+[Listener] Snapshot: symbol=1 seq=177862580 bids=877 asks=258
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3985 redemption_edge=-195
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2745 redemption_edge=-195
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=525 redemption_edge=-195
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=525 redemption_edge=-195
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=720 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=390 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=390 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=400 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-20 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-5 redemption_edge=-200
+[Listener] Snapshot: symbol=13 seq=177862926 bids=414 asks=338
+[Listener] Snapshot: symbol=12 seq=177862926 bids=1231 asks=437
+[Listener] Snapshot: symbol=11 seq=177862926 bids=731 asks=317
+[Listener] Snapshot: symbol=10 seq=177862926 bids=841 asks=319
+[Listener] Snapshot: symbol=9 seq=177862926 bids=943 asks=152
+[Listener] Snapshot: symbol=8 seq=177862926 bids=579 asks=561
+[Listener] Snapshot: symbol=7 seq=177862926 bids=1065 asks=729
+[Listener] Snapshot: symbol=6 seq=177862926 bids=499 asks=1053
+[Listener] Snapshot: symbol=5 seq=177862926 bids=364 asks=544
+[Listener] Snapshot: symbol=4 seq=177862926 bids=349 asks=419
+[Listener] Snapshot: symbol=3 seq=177862926 bids=443 asks=454
+[Listener] Snapshot: symbol=2 seq=177862926 bids=517 asks=578
+[Listener] Snapshot: symbol=1 seq=177862926 bids=876 asks=257
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=5670 redemption_edge=5510
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=5670 redemption_edge=5510
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2315 redemption_edge=5505
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2315 redemption_edge=5505
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1320 redemption_edge=-195
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1315 redemption_edge=-195
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1560 redemption_edge=-195
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=235 redemption_edge=-195
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-5 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-10 redemption_edge=-190
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-5 redemption_edge=-190
+[Listener] Snapshot: symbol=13 seq=177863310 bids=413 asks=337
+[Listener] Snapshot: symbol=12 seq=177863310 bids=1231 asks=437
+[Listener] Snapshot: symbol=11 seq=177863310 bids=730 asks=316
+[Listener] Snapshot: symbol=10 seq=177863310 bids=840 asks=318
+[Listener] Snapshot: symbol=6 seq=177863310 bids=499 asks=1054
+[Listener] Snapshot: symbol=5 seq=177863310 bids=364 asks=544
+[Listener] Snapshot: symbol=3 seq=177863310 bids=444 asks=455
+[Listener] Snapshot: symbol=2 seq=177863310 bids=517 asks=577
+[Listener] Snapshot: symbol=1 seq=177863310 bids=876 asks=257
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3385 redemption_edge=5510
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1700 redemption_edge=5510
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=650 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=650 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=655 redemption_edge=-195
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-15 redemption_edge=-195
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-15 redemption_edge=-195
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-20 redemption_edge=-195
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-20 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-10 redemption_edge=-200
+[Listener] Snapshot: symbol=13 seq=177863689 bids=413 asks=336
+[Listener] Snapshot: symbol=12 seq=177863689 bids=1232 asks=437
+[Listener] Snapshot: symbol=11 seq=177863689 bids=732 asks=316
+[Listener] Snapshot: symbol=10 seq=177863689 bids=842 asks=319
+[Listener] Snapshot: symbol=9 seq=177863689 bids=944 asks=152
+[Listener] Snapshot: symbol=8 seq=177863689 bids=580 asks=561
+[Listener] Snapshot: symbol=7 seq=177863689 bids=1066 asks=729
+[Listener] Snapshot: symbol=6 seq=177863689 bids=498 asks=1052
+[Listener] Snapshot: symbol=5 seq=177863689 bids=364 asks=542
+[Listener] Snapshot: symbol=4 seq=177863689 bids=350 asks=418
+[Listener] Snapshot: symbol=3 seq=177863689 bids=445 asks=455
+[Listener] Snapshot: symbol=2 seq=177863689 bids=519 asks=578
+[Listener] Snapshot: symbol=1 seq=177863689 bids=878 asks=257
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=5670 redemption_edge=5500
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=5670 redemption_edge=5500
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2925 redemption_edge=-210
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2925 redemption_edge=-210
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3170 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3595 redemption_edge=-210
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2915 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2910 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=715 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=715 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=525 redemption_edge=-205
+[Listener] Snapshot: symbol=13 seq=177864056 bids=412 asks=335
+[Listener] Snapshot: symbol=12 seq=177864056 bids=1231 asks=436
+[Listener] Snapshot: symbol=11 seq=177864056 bids=732 asks=316
+[Listener] Snapshot: symbol=10 seq=177864056 bids=842 asks=319
+[Listener] Snapshot: symbol=9 seq=177864056 bids=943 asks=151
+[Listener] Snapshot: symbol=8 seq=177864056 bids=580 asks=561
+[Listener] Snapshot: symbol=7 seq=177864056 bids=1066 asks=729
+[Listener] Snapshot: symbol=6 seq=177864056 bids=500 asks=1054
+[Listener] Snapshot: symbol=5 seq=177864056 bids=365 asks=543
+[Listener] Snapshot: symbol=4 seq=177864056 bids=350 asks=418
+[Listener] Snapshot: symbol=3 seq=177864056 bids=444 asks=454
+[Listener] Snapshot: symbol=2 seq=177864056 bids=519 asks=578
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3710 redemption_edge=-205
+[Listener] 5000 messages processed
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3150 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-70 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-50 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-55 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-40 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-40 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-35 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-25 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-15 redemption_edge=-205
+[Listener] Snapshot: symbol=13 seq=177864427 bids=415 asks=339
+[Listener] Snapshot: symbol=12 seq=177864427 bids=1232 asks=438
+[Listener] Snapshot: symbol=11 seq=177864427 bids=733 asks=317
+[Listener] Snapshot: symbol=10 seq=177864427 bids=841 asks=320
+[Listener] Snapshot: symbol=9 seq=177864427 bids=944 asks=154
+[Listener] Snapshot: symbol=8 seq=177864427 bids=579 asks=562
+[Listener] Snapshot: symbol=7 seq=177864427 bids=1066 asks=730
+[Listener] Snapshot: symbol=6 seq=177864427 bids=500 asks=1055
+[Listener] Snapshot: symbol=5 seq=177864427 bids=364 asks=545
+[Listener] Snapshot: symbol=4 seq=177864427 bids=350 asks=419
+[Listener] Snapshot: symbol=3 seq=177864427 bids=444 asks=455
+[Listener] Snapshot: symbol=2 seq=177864427 bids=519 asks=578
+[Listener] Snapshot: symbol=1 seq=177864427 bids=879 asks=260
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=5670 redemption_edge=5505
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3755 redemption_edge=5510
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2995 redemption_edge=5505
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2995 redemption_edge=5505
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1120 redemption_edge=5510
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=795 redemption_edge=5505
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=645 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=645 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=655 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=650 redemption_edge=-200
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=645 redemption_edge=-205
+[Listener] Snapshot: symbol=13 seq=177864828 bids=414 asks=338
+[Listener] Snapshot: symbol=12 seq=177864828 bids=1231 asks=437
+[Listener] Snapshot: symbol=11 seq=177864828 bids=733 asks=317
+[Listener] Snapshot: symbol=10 seq=177864828 bids=840 asks=318
+[Listener] Snapshot: symbol=9 seq=177864828 bids=942 asks=153
+[Listener] Snapshot: symbol=8 seq=177864828 bids=578 asks=561
+[Listener] Snapshot: symbol=7 seq=177864828 bids=1065 asks=729
+[Listener] Snapshot: symbol=6 seq=177864828 bids=500 asks=1055
+[Listener] Snapshot: symbol=5 seq=177864828 bids=364 asks=545
+[Listener] Snapshot: symbol=4 seq=177864828 bids=349 asks=419
+[Listener] Snapshot: symbol=3 seq=177864828 bids=445 asks=455
+[Listener] Snapshot: symbol=2 seq=177864828 bids=519 asks=579
+[Listener] Snapshot: symbol=1 seq=177864828 bids=879 asks=260
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1815 redemption_edge=5500
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=945 redemption_edge=-220
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=280 redemption_edge=-220
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=285 redemption_edge=-220
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=290 redemption_edge=-220
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=305 redemption_edge=-210
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=305 redemption_edge=-210
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-30 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=725 redemption_edge=-215
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-35 redemption_edge=-215
+[Listener] Snapshot: symbol=13 seq=177865166 bids=415 asks=339
+[Listener] Snapshot: symbol=12 seq=177865166 bids=1232 asks=438
+[Listener] Snapshot: symbol=11 seq=177865166 bids=733 asks=317
+[Listener] Snapshot: symbol=10 seq=177865166 bids=842 asks=320
+[Listener] Snapshot: symbol=9 seq=177865166 bids=943 asks=154
+[Listener] Snapshot: symbol=8 seq=177865166 bids=579 asks=562
+[Listener] Snapshot: symbol=7 seq=177865166 bids=1066 asks=730
+[Listener] Snapshot: symbol=6 seq=177865166 bids=498 asks=1053
+[Listener] Snapshot: symbol=5 seq=177865166 bids=364 asks=544
+[Listener] Snapshot: symbol=4 seq=177865166 bids=349 asks=420
+[Listener] Snapshot: symbol=3 seq=177865166 bids=445 asks=455
+[Listener] Snapshot: symbol=2 seq=177865166 bids=518 asks=579
+[Listener] Snapshot: symbol=1 seq=177865166 bids=879 asks=260
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=5670 redemption_edge=5490
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3685 redemption_edge=5490
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2225 redemption_edge=5490
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2785 redemption_edge=5490
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-40 redemption_edge=5490
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=895 redemption_edge=5490
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-30 redemption_edge=-210
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-30 redemption_edge=-210
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-40 redemption_edge=-210
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-40 redemption_edge=-210
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-30 redemption_edge=-210
+[Listener] Snapshot: symbol=13 seq=177865551 bids=415 asks=339
+[Listener] Snapshot: symbol=12 seq=177865551 bids=1232 asks=439
+[Listener] Snapshot: symbol=11 seq=177865551 bids=732 asks=316
+[Listener] Snapshot: symbol=10 seq=177865551 bids=841 asks=319
+[Listener] Snapshot: symbol=9 seq=177865551 bids=942 asks=152
+[Listener] Snapshot: symbol=8 seq=177865551 bids=578 asks=561
+[Listener] Snapshot: symbol=7 seq=177865551 bids=1066 asks=730
+[Listener] Snapshot: symbol=6 seq=177865551 bids=501 asks=1055
+[Listener] Snapshot: symbol=5 seq=177865551 bids=363 asks=543
+[Listener] Snapshot: symbol=4 seq=177865551 bids=348 asks=419
+[Listener] Snapshot: symbol=3 seq=177865551 bids=445 asks=455
+[Listener] Snapshot: symbol=2 seq=177865551 bids=519 asks=579
+[Listener] Snapshot: symbol=1 seq=177865551 bids=879 asks=260
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2225 redemption_edge=5490
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1080 redemption_edge=5490
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1850 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-30 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-25 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-10 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-10 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-25 redemption_edge=5480
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-5 redemption_edge=-210
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-5 redemption_edge=-205
+[Listener] Snapshot: symbol=13 seq=177865904 bids=415 asks=339
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-15 redemption_edge=5485
+[Listener] Snapshot: symbol=12 seq=177865904 bids=1232 asks=439
+[Listener] Snapshot: symbol=11 seq=177865904 bids=733 asks=317
+[Listener] Snapshot: symbol=10 seq=177865904 bids=842 asks=320
+[Listener] Snapshot: symbol=9 seq=177865904 bids=943 asks=153
+[Listener] Snapshot: symbol=8 seq=177865904 bids=579 asks=562
+[Listener] Snapshot: symbol=7 seq=177865904 bids=1066 asks=730
+[Listener] Snapshot: symbol=6 seq=177865904 bids=501 asks=1055
+[Listener] Snapshot: symbol=5 seq=177865904 bids=364 asks=544
+[Listener] Snapshot: symbol=4 seq=177865904 bids=349 asks=420
+[Listener] Snapshot: symbol=3 seq=177865904 bids=444 asks=455
+[Listener] Snapshot: symbol=2 seq=177865904 bids=519 asks=578
+[Listener] Snapshot: symbol=1 seq=177865904 bids=879 asks=259
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=4850 redemption_edge=-220
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3555 redemption_edge=-220
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3555 redemption_edge=-220
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3560 redemption_edge=-210
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3410 redemption_edge=-215
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=890 redemption_edge=-215
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=895 redemption_edge=-220
+[PnL] total=0 | positions: 
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=885 redemption_edge=-220
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=220 redemption_edge=-220
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-40 redemption_edge=-220
+[Listener] Snapshot: symbol=13 seq=177866270 bids=415 asks=339
+[Listener] Snapshot: symbol=12 seq=177866270 bids=1232 asks=439
+[Listener] Snapshot: symbol=11 seq=177866270 bids=733 asks=317
+[Listener] Snapshot: symbol=10 seq=177866270 bids=842 asks=320
+[Listener] Snapshot: symbol=9 seq=177866270 bids=943 asks=153
+[Listener] Snapshot: symbol=8 seq=177866270 bids=579 asks=562
+[Listener] Snapshot: symbol=7 seq=177866270 bids=1067 asks=730
+[Listener] Snapshot: symbol=6 seq=177866270 bids=500 asks=1055
+[Listener] Snapshot: symbol=5 seq=177866270 bids=364 asks=545
+[Listener] Snapshot: symbol=4 seq=177866270 bids=349 asks=419
+[Listener] Snapshot: symbol=3 seq=177866270 bids=445 asks=455
+[Listener] Snapshot: symbol=2 seq=177866270 bids=519 asks=578
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=5050 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=5050 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1300 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1305 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=375 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=390 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-10 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-10 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-15 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-5 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-15 redemption_edge=5485
+[Listener] Snapshot: symbol=13 seq=177866625 bids=415 asks=339
+[Listener] Snapshot: symbol=12 seq=177866625 bids=1232 asks=439
+[Listener] Snapshot: symbol=11 seq=177866625 bids=733 asks=317
+[Listener] Snapshot: symbol=10 seq=177866625 bids=842 asks=320
+[Listener] Snapshot: symbol=9 seq=177866625 bids=943 asks=154
+[Listener] Snapshot: symbol=8 seq=177866625 bids=579 asks=563
+[Listener] Snapshot: symbol=7 seq=177866625 bids=1067 asks=730
+[Listener] Snapshot: symbol=6 seq=177866625 bids=501 asks=1055
+[Listener] Snapshot: symbol=5 seq=177866625 bids=364 asks=545
+[Listener] Snapshot: symbol=4 seq=177866625 bids=349 asks=419
+[Listener] Snapshot: symbol=3 seq=177866625 bids=445 asks=455
+[Listener] Snapshot: symbol=2 seq=177866625 bids=519 asks=579
+[Listener] Snapshot: symbol=1 seq=177866625 bids=879 asks=259
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=4090 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3115 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3115 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3125 redemption_edge=5490
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3120 redemption_edge=5480
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1245 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1240 redemption_edge=5485
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1245 redemption_edge=-205
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1245 redemption_edge=-210
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=1250 redemption_edge=-210
+[Listener] Snapshot: symbol=13 seq=177866980 bids=415 asks=339
+[Listener] Snapshot: symbol=12 seq=177866980 bids=1230 asks=437
+[Listener] Snapshot: symbol=11 seq=177866980 bids=733 asks=317
+[Listener] Snapshot: symbol=10 seq=177866980 bids=842 asks=320
+[Listener] Snapshot: symbol=9 seq=177866980 bids=942 asks=153
+[Listener] Snapshot: symbol=8 seq=177866980 bids=578 asks=562
+[Listener] Snapshot: symbol=7 seq=177866980 bids=1067 asks=730
+[Listener] Snapshot: symbol=6 seq=177866980 bids=500 asks=1054
+[Listener] Snapshot: symbol=5 seq=177866980 bids=364 asks=545
+[Listener] Snapshot: symbol=4 seq=177866980 bids=349 asks=419
+[Listener] Snapshot: symbol=3 seq=177866980 bids=445 asks=456
+[Listener] Snapshot: symbol=2 seq=177866980 bids=518 asks=578
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=5670 redemption_edge=5490
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=5245 redemption_edge=5490
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3485 redemption_edge=5490
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=265 redemption_edge=5490
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-40 redemption_edge=5490
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-55 redemption_edge=5490
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-45 redemption_edge=5490
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-45 redemption_edge=5490
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=390 redemption_edge=5495
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-30 redemption_edge=-210
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-30 redemption_edge=-210
+[Listener] Snapshot: symbol=13 seq=177867368 bids=415 asks=339
+[Listener] Snapshot: symbol=12 seq=177867368 bids=1232 asks=439
+[Listener] Snapshot: symbol=11 seq=177867368 bids=733 asks=317
+[Listener] Snapshot: symbol=10 seq=177867368 bids=842 asks=319
+[Listener] Snapshot: symbol=9 seq=177867368 bids=942 asks=154
+[Listener] Snapshot: symbol=8 seq=177867368 bids=579 asks=562
+[Listener] Snapshot: symbol=7 seq=177867368 bids=1067 asks=729
+[Listener] Snapshot: symbol=6 seq=177867368 bids=501 asks=1055
+[Listener] Snapshot: symbol=5 seq=177867368 bids=364 asks=545
+[Listener] Snapshot: symbol=4 seq=177867368 bids=349 asks=419
+[Listener] Snapshot: symbol=3 seq=177867368 bids=445 asks=455
+[Listener] Snapshot: symbol=2 seq=177867368 bids=519 asks=578
+[Listener] Snapshot: symbol=1 seq=177867368 bids=878 asks=258
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=5090 redemption_edge=5495
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=2150 redemption_edge=-215
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=815 redemption_edge=-215
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=540 redemption_edge=-215
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=540 redemption_edge=-215
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=535 redemption_edge=-215
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=535 redemption_edge=-215
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=125 redemption_edge=-210
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-25 redemption_edge=-215
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=-25 redemption_edge=-215
+[Listener] Snapshot: symbol=13 seq=177867726 bids=413 asks=337
+[Listener] Snapshot: symbol=12 seq=177867726 bids=1232 asks=439
+[Listener] Snapshot: symbol=11 seq=177867726 bids=733 asks=317
+[Listener] Snapshot: symbol=10 seq=177867726 bids=841 asks=318
+[Listener] Snapshot: symbol=9 seq=177867726 bids=942 asks=154
+[Listener] Snapshot: symbol=8 seq=177867726 bids=579 asks=562
+[Listener] Snapshot: symbol=7 seq=177867726 bids=1066 asks=728
+[Listener] Snapshot: symbol=6 seq=177867726 bids=500 asks=1054
+[Listener] Snapshot: symbol=5 seq=177867726 bids=364 asks=545
+[Listener] Snapshot: symbol=4 seq=177867726 bids=349 asks=419
+[Listener] Snapshot: symbol=3 seq=177867726 bids=445 asks=455
+[Listener] Snapshot: symbol=2 seq=177867726 bids=518 asks=577
+[Listener] Snapshot: symbol=1 seq=177867726 bids=879 asks=259
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=5670 redemption_edge=5495
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=3440 redemption_edge=-230
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=530 redemption_edge=-230
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=530 redemption_edge=-230
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=275 redemption_edge=-230
+[ARB] creation_viable=0 redemption_viable=0 creation_edge=275 redemption_edge=-230

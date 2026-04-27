@@ -52,6 +52,31 @@ int main() {
         run_listener(sm);
     });
 
+    // Launch PnL monitor — prints every 5 seconds
+    std::thread pnl_thread([&]() {
+        while (true) {
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+        
+            double pnl = sm.get_total_pnl();
+            std::cout << "[PnL] total=" << pnl
+                  << " | positions: ";
+        
+            for (uint32_t id = 1; id <= 13; ++id) {
+                int32_t pos = sm.get_position(id);
+                if (pos != 0) {
+                    std::cout << "sym" << id << "=" << pos << " ";
+                }
+            }
+            std::cout << "\n";
+
+            // Warn loudly if approaching the floor
+            if (pnl < -4000.0) {
+                std::cerr << "[PnL] WARNING: approaching -5000 floor!\n";
+            }
+        }
+    });
+    pnl_thread.detach();  // fire and forget
+
     // ── Wait briefly for order books to populate ─────────────────────────────
     std::cout << "Waiting 3s for market data snapshot...\n";
     std::this_thread::sleep_for(std::chrono::seconds(3));

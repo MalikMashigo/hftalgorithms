@@ -92,6 +92,9 @@ public:
     void on_modify_order(uint32_t symbol_id, const modify_order* msg);
     void on_trade       (uint32_t symbol_id, const trade*        msg);
 
+    // Call when a snapshot arrives for a symbol to clear stale orders
+    void reset_book(uint32_t symbol_id);
+
     // ── Fill callback ────────────────────────────────────────────────────────
     // Called when one of our orders is filled.
     // Updates atomic position and global PnL via a CAS loop (no kernel call).

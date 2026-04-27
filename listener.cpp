@@ -159,6 +159,14 @@ void run_listener(SymbolManager& sm) {
                     snapshot_info* snap = reinterpret_cast<snapshot_info*>(buf + offset);
                     uint32_t symbol     = snap->symbol;
 
+                    sm.reset_book(symbol);
+
+                    // Remove stale order→symbol mappings for this symbol
+                    for (auto it = order_to_symbol.begin(); it != order_to_symbol.end(); ) {
+                        if (it->second == symbol) it = order_to_symbol.erase(it);
+                        else ++it;
+                    }
+
                     std::cout << "[Listener] Snapshot: symbol=" << symbol
                               << " seq=" << snap->last_md_seq_num
                               << " bids=" << snap->bid_count

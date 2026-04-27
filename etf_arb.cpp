@@ -36,6 +36,23 @@ void ETFArb::run() {
 
         ArbSnapshot snap = sm_.snapshot();
 
+        // ADD THIS TEMPORARILY
+        static int tick = 0;
+        if (++tick % 1000000 == 0) {
+           bool creation_viable  = !snap.any_dorm_ask_missing && 
+                             snap.undy_best_bid_price > 0 &&
+                            (snap.undy_best_bid_price - snap.nav_ask) > MIN_EDGE;
+            bool redemption_viable = !snap.any_dorm_bid_missing && 
+                              snap.undy_best_ask_price > 0 &&
+                             (snap.nav_bid - snap.undy_best_ask_price) > MIN_EDGE;
+
+            std::cout << "[ARB] creation_viable=" << creation_viable
+              << " redemption_viable="    << redemption_viable
+              << " creation_edge="        << (snap.undy_best_bid_price - snap.nav_ask)
+              << " redemption_edge="      << (snap.nav_bid - snap.undy_best_ask_price)
+              << "\n";
+        }
+
         // Try both directions on every tick
         // creation first (typically higher edge when UNDY is overpriced)
         if (!try_creation_arb(snap)) {

@@ -33,7 +33,7 @@ run_bot: bot
 	./bot
 
 clean:
-	rm -f listener oe_client tests bbo_data.csv oe_log.txt risk_log.txt risk_demo_log.txt
+	rm -f listener oe_client tests bot bbo_data.csv oe_log.txt risk_log.txt risk_demo_log.txt
 
 run_listener: listener
 	./listener

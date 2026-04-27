@@ -191,7 +191,7 @@ ETFResult ETFClient::post_amount(const std::string& endpoint, int32_t amount) {
         return {false, "Empty response body", -1};
     }
 
-    return parse_response(json_body);
+    return parse_response(json_body, http_ok);
 }
 
 // ── Minimal JSON parser ───────────────────────────────────────────────────────
@@ -199,7 +199,10 @@ ETFResult ETFClient::post_amount(const std::string& endpoint, int32_t amount) {
 //   {"success":true,  "message":"Created 5 UNDY...", "undy_balance":10}
 //   {"success":false, "message":"Insufficient...",    "undy_balance": 5}
 
-ETFResult ETFClient::parse_response(const std::string& body) {
+ETFResult ETFClient::parse_response(const std::string& body, bool http_ok) {
+    if (!http_ok) {
+        return {false, "HTTP error: " + body, -1};
+    }
     ETFResult result{false, body, -1};  // safe defaults
 
     // ── success ──────────────────────────────────────────────────────────────

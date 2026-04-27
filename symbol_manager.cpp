@@ -63,6 +63,15 @@ void SymbolManager::on_trade(uint32_t id, const trade* msg) {
     s.flush_top_of_book();
 }
 
+void SymbolManager::reset_book(uint32_t symbol_id) {
+    auto& s = slot(symbol_id);
+    s.book = OrderBook(symbol_id);   // replace with fresh book
+    s.best_bid_price.store(0, std::memory_order_release);
+    s.best_bid_qty  .store(0, std::memory_order_release);
+    s.best_ask_price.store(0, std::memory_order_release);
+    s.best_ask_qty  .store(0, std::memory_order_release);
+}
+
 // ── Fill callback ─────────────────────────────────────────────────────────────
 // Updates atomic position and global PnL.
 // Uses a CAS loop for the PnL double — spins in user space, no kernel call.
