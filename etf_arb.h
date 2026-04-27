@@ -31,6 +31,8 @@ private:
 
     std::atomic<bool>     running_{true};
     std::atomic<uint64_t> next_order_id_{1000};  // unique IDs for our orders
+    std::unordered_map<uint64_t, std::pair<uint32_t, SIDE>> order_map_;
+    static constexpr bool DEBUG_LOG = true; 
 
     uint64_t next_id() {
         return next_order_id_.fetch_add(1, std::memory_order_relaxed);

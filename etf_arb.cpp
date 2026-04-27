@@ -4,14 +4,26 @@
 #include <array>
 
 ETFArb::ETFArb(SymbolManager& sm, OEClient& oe, ETFClient& etf)
-    : sm_(sm), oe_(oe), etf_(etf) {}
+    : sm_(sm), oe_(oe), etf_(etf) {
+        oe_.set_on_fill([this](const FillEvent& f) {
+        auto it = order_map_.find(f.order_id);
+        if (it == order_map_.end()) return;
+        sm_.on_fill(it->second.first,   // symbol
+                    it->second.second,  // side
+                    f.qty,
+                    f.price);
+        if (f.closed) order_map_.erase(it);
+    });
+    }
 
 // ── Main loop ─────────────────────────────────────────────────────────────────
 // Spins as fast as possible reading snapshots and checking for arb.
 // No sleep — every microsecond counts.
 
 void ETFArb::run() {
-    std::cout << "[ETFArb] Starting arb loop\n";
+    if constexpr (DEBUG_LOG) {
+        std::cout << "[ETFArb] Starting arb loop\n";
+    }
 
     while (running_.load(std::memory_order_acquire)) {
 
@@ -31,7 +43,9 @@ void ETFArb::run() {
         }
     }
 
+    if constexpr (DEBUG_LOG) {
     std::cout << "[ETFArb] Loop stopped\n";
+    }
 }
 
 // ── Creation arb ──────────────────────────────────────────────────────────────
@@ -48,15 +62,18 @@ bool ETFArb::try_creation_arb(const ArbSnapshot& snap) {
     int32_t qty = creation_qty(snap);
     if (qty <= 0) return false;
 
-    std::cout << "[ETFArb] CREATION arb: edge=" << edge
+    if constexpr (DEBUG_LOG) {
+        std::cout << "[ETFArb] CREATION arb: edge=" << edge
               << " qty=" << qty
               << " nav_ask=" << snap.nav_ask
               << " undy_bid=" << snap.undy_best_bid_price << "\n";
+    }
 
     // ── Step 1: fire all 10 dorm buys without waiting ─────────────────────
     std::array<uint64_t, 10> order_ids;
     for (size_t i = 0; i < DORM_IDS.size(); ++i) {
         order_ids[i] = next_id();
+        order_map_[order_ids[i]] = {DORM_IDS[i], SIDE::BUY}; 
         oe_.send_new_order_no_wait(order_ids[i],
                                    DORM_IDS[i],
                                    SIDE::BUY,
@@ -86,10 +103,13 @@ bool ETFArb::try_creation_arb(const ArbSnapshot& snap) {
         return true;
     }
 
-    std::cout << "[ETFArb] /create OK, undy_balance=" << r.undy_balance << "\n";
+    if constexpr (DEBUG_LOG) {
+        std::cout << "[ETFArb] /create OK, undy_balance=" << r.undy_balance << "\n";
+    }
 
     // ── Step 4: sell UNDY at bid ──────────────────────────────────────────
     uint64_t undy_oid = next_id();
+    order_map_[undy_oid] = {SYM_UNDY, SIDE::SELL}; 
     bool sold = oe_.send_new_order(undy_oid,
                                    SYM_UNDY,
                                    SIDE::SELL,
@@ -116,13 +136,16 @@ bool ETFArb::try_redemption_arb(const ArbSnapshot& snap) {
     int32_t qty = redemption_qty(snap);
     if (qty <= 0) return false;
 
-    std::cout << "[ETFArb] REDEMPTION arb: edge=" << edge
+    if constexpr (DEBUG_LOG) {
+        std::cout << "[ETFArb] REDEMPTION arb: edge=" << edge
               << " qty=" << qty
               << " nav_bid=" << snap.nav_bid
               << " undy_ask=" << snap.undy_best_ask_price << "\n";
+    }
 
     // ── Step 1: buy UNDY ──────────────────────────────────────────────────
     uint64_t undy_oid = next_id();
+    order_map_[undy_oid] = {SYM_UNDY, SIDE::BUY};  
     bool bought = oe_.send_new_order(undy_oid,
                                      SYM_UNDY,
                                      SIDE::BUY,
@@ -140,12 +163,15 @@ bool ETFArb::try_redemption_arb(const ArbSnapshot& snap) {
         return true;
     }
 
-    std::cout << "[ETFArb] /redeem OK, undy_balance=" << r.undy_balance << "\n";
+    if constexpr (DEBUG_LOG) {
+        std::cout << "[ETFArb] /redeem OK, undy_balance=" << r.undy_balance << "\n";
+    }
 
     // ── Step 3: sell all 10 dorms simultaneously ──────────────────────────
     std::array<uint64_t, 10> order_ids;
     for (size_t i = 0; i < DORM_IDS.size(); ++i) {
         order_ids[i] = next_id();
+        order_map_[order_ids[i]] = {DORM_IDS[i], SIDE::SELL};
         oe_.send_new_order_no_wait(order_ids[i],
                                    DORM_IDS[i],
                                    SIDE::SELL,

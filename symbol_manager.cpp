@@ -8,26 +8,29 @@
 
 SymbolManager::SymbolManager() : total_pnl_(0.0) {
     for (uint32_t id = 1; id <= 13; ++id) {
-        slots_.emplace(id, std::make_unique<SymbolSlot>(id));
+        //slots_.emplace(id, std::make_unique<SymbolSlot>(id));
+        slots_[id] = std::make_unique<SymbolSlot>(id);
     }
 }
 
 // ── Safe accessor ─────────────────────────────────────────────────────────────
 
 SymbolManager::SymbolSlot& SymbolManager::slot(uint32_t id) {
-    auto it = slots_.find(id);
-    if (it == slots_.end())
-        throw std::out_of_range("SymbolManager: unknown symbol_id "
-                                + std::to_string(id));
-    return *it->second;
+    // auto it = slots_.find(id);
+    // if (it == slots_.end())
+    //     throw std::out_of_range("SymbolManager: unknown symbol_id "
+    //                             + std::to_string(id));
+    // return *it->second;
+    return *slots_[id];  // direct array access, no hash
 }
 
 const SymbolManager::SymbolSlot& SymbolManager::slot(uint32_t id) const {
-    auto it = slots_.find(id);
-    if (it == slots_.end())
-        throw std::out_of_range("SymbolManager: unknown symbol_id "
-                                + std::to_string(id));
-    return *it->second;
+    // auto it = slots_.find(id);
+    // if (it == slots_.end())
+    //     throw std::out_of_range("SymbolManager: unknown symbol_id "
+    //                             + std::to_string(id));
+    // return *it->second;
+    return *slots_[id];
 }
 
 // ── Market data thread ────────────────────────────────────────────────────────

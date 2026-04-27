@@ -30,15 +30,15 @@ int main() {
     }
 
     // Hook fill callback → SymbolManager so positions stay up to date
-    oe.set_on_fill([&](const FillEvent& f) {
-        // We need to know the symbol for each fill.
-        // OEClient doesn't currently carry symbol in FillEvent — see note below.
-        // For now, route all fills through a local order→symbol map.
-        // TODO: add symbol tracking (see note below)
-        std::cout << "[FILL] order=" << f.order_id
-                  << " qty=" << f.qty
-                  << " price=" << f.price << "\n";
-    });
+    // oe.set_on_fill([&](const FillEvent& f) {
+    //     // We need to know the symbol for each fill.
+    //     // OEClient doesn't currently carry symbol in FillEvent — see note below.
+    //     // For now, route all fills through a local order→symbol map.
+    //     // TODO: add symbol tracking (see note below)
+    //     std::cout << "[FILL] order=" << f.order_id
+    //               << " qty=" << f.qty
+    //               << " price=" << f.price << "\n";
+    // });
 
     // ── ETF client ───────────────────────────────────────────────────────────
     ETFClient etf(ETF_URL, TEAM_NAME, PASSWORD);

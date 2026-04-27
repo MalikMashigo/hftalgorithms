@@ -153,7 +153,8 @@ private:
         }
     };
 
-    std::unordered_map<uint32_t, std::unique_ptr<SymbolSlot>> slots_;
+    //std::unordered_map<uint32_t, std::unique_ptr<SymbolSlot>> slots_;
+    std::array<std::unique_ptr<SymbolSlot>, 14> slots_; //index 0 unused
 
     // Global PnL stored as an atomic double.
     // Updated via CAS loop in on_fill() — no kernel call.
