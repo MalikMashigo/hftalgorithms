@@ -9,6 +9,7 @@
 #include "oe_client.h"
 #include "etf_client.h"
 #include "etf_arb.h"
+#include "market_maker.h"
 #include "listener.h"
 
 static constexpr const char* EXCHANGE_HOST = "192.168.13.100";
@@ -69,6 +70,9 @@ int main() {
     mm_order_map.erase(order_id);
     });
 
+    // ── MarketMaker (separate class for GOLD and BLUE quotes) ───────────────
+    MarketMaker mm(oe, sm, SYM_GOLD, SYM_BLUE);
+
     // ── Market data thread ────────────────────────────────────────────────────
     std::thread md_thread([&]() {
         run_listener(sm);
@@ -95,102 +99,14 @@ int main() {
     });
     pnl_thread.detach();
 
-    // ── Market maker thread (GOLD + BLUE) ─────────────────────────────────────
+    // ── Market maker thread (GOLD + BLUE using MarketMaker class) ────────────
     std::thread mm_thread([&]() {
-        std::cout << "[MM] Thread started\n"; 
-        uint64_t mm_order_id = 90000;
-        uint64_t gold_bid_id = 0, gold_ask_id = 0;
-        uint64_t blue_bid_id = 0, blue_ask_id = 0;
-        int32_t  last_gold_mid = 0, last_blue_mid = 0;
-
-        auto safe_delete = [&](uint64_t& oid) {
-            if (oid == 0) return;
-            oe.delete_order(oid);
-            oid = 0;
-        };
-
+        std::cout << "[MM] Market maker thread started\n";
         while (!global_shutdown.load(std::memory_order_acquire)) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-    // ── Position guards — cancel resting orders if too long/short ─────────
-    int32_t gold_pos = sm.get_position(SYM_GOLD);
-    if (gold_pos >= MM_POSITION_LIMIT - 1 && gold_bid_id != 0) safe_delete(gold_bid_id);
-    if (gold_pos <= -(MM_POSITION_LIMIT - 1) && gold_ask_id != 0) safe_delete(gold_ask_id);
-
-    int32_t blue_pos = sm.get_position(SYM_BLUE);
-    if (blue_pos >= MM_POSITION_LIMIT - 1 && blue_bid_id != 0) safe_delete(blue_bid_id);
-    if (blue_pos <= -(MM_POSITION_LIMIT - 1) && blue_ask_id != 0) safe_delete(blue_ask_id);
-
-    // ── GOLD ──────────────────────────────────────────────────────────────
-    int32_t gold_bid = sm.best_bid_price(SYM_GOLD);
-    int32_t gold_ask = sm.best_ask_price(SYM_GOLD);
-
-    if (gold_bid > 0 && gold_ask > 0) {
-        int32_t gold_mid = (gold_bid + gold_ask) / 2;
-        gold_mid = (gold_mid / (int32_t)GOLD_TICK) * (int32_t)GOLD_TICK;
-
-        if (gold_mid != last_gold_mid) {
-            safe_delete(gold_bid_id);
-            safe_delete(gold_ask_id);
-
-            gold_pos = sm.get_position(SYM_GOLD);  // fresh read after deletes
-            if (gold_pos < MM_POSITION_LIMIT) {
-                gold_bid_id = ++mm_order_id;
-                mm_order_map[gold_bid_id] = {SYM_GOLD, SIDE::BUY};
-                oe.send_new_order(gold_bid_id, SYM_GOLD,
-                                  SIDE::BUY, 1, gold_mid - GOLD_TICK);
-            }
-
-            gold_pos = sm.get_position(SYM_GOLD);  // fresh read before ask
-            if (gold_pos > -MM_POSITION_LIMIT) {
-                gold_ask_id = ++mm_order_id;
-                mm_order_map[gold_ask_id] = {SYM_GOLD, SIDE::SELL};
-                oe.send_new_order(gold_ask_id, SYM_GOLD,
-                                  SIDE::SELL, 1, gold_mid + GOLD_TICK);
-            }
-
-            last_gold_mid = gold_mid;
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            mm.on_book_update(SYM_GOLD);
+            mm.on_book_update(SYM_BLUE);
         }
-    }
-
-    // ── BLUE ──────────────────────────────────────────────────────────────
-    int32_t blue_bid = sm.best_bid_price(SYM_BLUE);
-    int32_t blue_ask = sm.best_ask_price(SYM_BLUE);
-
-    if (blue_bid > 0 && blue_ask > 0) {
-        int32_t blue_mid = (blue_bid + blue_ask) / 2;
-        blue_mid = (blue_mid / (int32_t)BLUE_TICK) * (int32_t)BLUE_TICK;
-
-        if (blue_mid != last_blue_mid) {
-            safe_delete(blue_bid_id);
-            safe_delete(blue_ask_id);
-
-            blue_pos = sm.get_position(SYM_BLUE);  // fresh read after deletes
-            if (blue_pos < MM_POSITION_LIMIT) {
-                blue_bid_id = ++mm_order_id;
-                mm_order_map[blue_bid_id] = {SYM_BLUE, SIDE::BUY};
-                oe.send_new_order(blue_bid_id, SYM_BLUE,
-                                  SIDE::BUY, 1, blue_mid - BLUE_TICK);
-            }
-
-            blue_pos = sm.get_position(SYM_BLUE);  // fresh read before ask
-            if (blue_pos > -MM_POSITION_LIMIT) {
-                blue_ask_id = ++mm_order_id;
-                mm_order_map[blue_ask_id] = {SYM_BLUE, SIDE::SELL};
-                oe.send_new_order(blue_ask_id, SYM_BLUE,
-                                  SIDE::SELL, 1, blue_mid + BLUE_TICK);
-            }
-
-            last_blue_mid = blue_mid;
-        }
-    }
-}
-
-        // Cleanup on shutdown
-        if (gold_bid_id) safe_delete(gold_bid_id);
-        if (gold_ask_id) safe_delete(gold_ask_id);
-        if (blue_bid_id) safe_delete(blue_bid_id);
-        if (blue_ask_id) safe_delete(blue_ask_id);
         std::cout << "[MM] Market maker shut down\n";
     });
 

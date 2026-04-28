@@ -10,7 +10,8 @@ BOT_SRCS = main.cpp \
            orderbook.cpp \
            etf_client.cpp \
            symbol_manager.cpp \
-           etf_arb.cpp
+           etf_arb.cpp \
+           market_maker.cpp
 
 all: listener oe_client tests
 
