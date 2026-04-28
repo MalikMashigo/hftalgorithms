@@ -63,6 +63,29 @@ void SymbolManager::on_trade(uint32_t id, const trade* msg) {
     s.flush_top_of_book();
 }
 
+void SymbolManager::save_positions(const std::string& path) const {
+    std::ofstream f(path);
+    for (uint32_t id = 1; id <= 13; ++id) {
+        int32_t pos = slot(id).position.load(std::memory_order_acquire);
+        if (pos != 0) f << id << " " << pos << "\n";
+    }
+    std::cout << "[SymbolManager] Positions saved to " << path << "\n";
+}
+
+void SymbolManager::load_positions(const std::string& path) {
+    std::ifstream f(path);
+    if (!f.is_open()) {
+        std::cout << "[SymbolManager] No saved positions found\n";
+        return;
+    }
+    uint32_t id; int32_t pos;
+    while (f >> id >> pos) {
+        slot(id).position.store(pos, std::memory_order_release);
+        std::cout << "[SymbolManager] Loaded sym=" << id
+                  << " pos=" << pos << "\n";
+    }
+}
+
 void SymbolManager::reset_book(uint32_t symbol_id) {
     auto& s = slot(symbol_id);
     s.book = OrderBook(symbol_id);   // replace with fresh book

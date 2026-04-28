@@ -228,7 +228,6 @@ void run_listener(SymbolManager& sm) {
 }
 
 // ── Multicast socket setup ────────────────────────────────────────────────────
-// Unchanged from original
 
 int create_multicast_socket(const char* mcast_addr, int port, const char* local_ip) {
     int fd = socket(AF_INET, SOCK_DGRAM, 0);

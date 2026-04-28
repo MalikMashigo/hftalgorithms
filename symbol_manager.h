@@ -5,6 +5,7 @@
 #include <memory>
 #include <unordered_map>
 #include <cstdint>
+#include <fstream>
 
 #include "orderbook.h"
 #include "messages.h"
@@ -91,6 +92,9 @@ public:
     void on_delete_order(uint32_t symbol_id, const delete_order* msg);
     void on_modify_order(uint32_t symbol_id, const modify_order* msg);
     void on_trade       (uint32_t symbol_id, const trade*        msg);
+
+    void save_positions(const std::string& path) const;
+    void load_positions(const std::string& path);
 
     // Call when a snapshot arrives for a symbol to clear stale orders
     void reset_book(uint32_t symbol_id);

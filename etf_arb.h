@@ -24,6 +24,7 @@ public:
 
     void run();
     void stop() { running_.store(false, std::memory_order_release); }
+    void run_with_mm(int32_t mm_limit, uint32_t blue_tick);
     std::atomic<bool> arb_in_progress_{false};
 
 private:
@@ -33,6 +34,8 @@ private:
     std::atomic<bool>& global_shutdown_;
     std::atomic<bool>  running_{true};
     std::atomic<uint64_t> next_order_id_{1000};
+    std::chrono::steady_clock::time_point arb_start_time_;
+    std::chrono::steady_clock::time_point last_unwind_time_{};
 
     std::unordered_map<uint64_t, std::pair<uint32_t, SIDE>> order_map_;
     OrderMap& mm_order_map_; 
