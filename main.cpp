@@ -85,7 +85,7 @@ int main() {
     // ── PnL monitor thread ────────────────────────────────────────────────────
     std::thread pnl_thread([&]() {
         while (!global_shutdown.load(std::memory_order_acquire)) {
-            std::this_thread::sleep_for(std::chrono::seconds(5));
+            std::this_thread::sleep_for(std::chrono::seconds(1));
             double pnl = sm.get_total_pnl();
             std::cout << "[PnL] total=" << pnl << " | positions: ";
             for (uint32_t id = 1; id <= 13; ++id) {
@@ -93,11 +93,11 @@ int main() {
                 if (pos != 0) std::cout << "sym" << id << "=" << pos << " ";
             }
             std::cout << "\n";
+            std::cout.flush();
             if (pnl < -4000.0)
                 std::cerr << "[PnL] WARNING: approaching -5000 floor!\n";
         }
     });
-    pnl_thread.detach();
 
     // ── Market maker thread (GOLD + BLUE using MarketMaker class) ────────────
     std::thread mm_thread([&]() {
@@ -118,5 +118,6 @@ int main() {
     md_thread.join();
     arb_thread.join();
     mm_thread.join();
+    pnl_thread.join();
     return 0;
 }
