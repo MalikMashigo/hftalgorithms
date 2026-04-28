@@ -3,14 +3,36 @@
 #include <algorithm>
 
 ETFArb::ETFArb(SymbolManager& sm, OEClient& oe, ETFClient& etf,
-               std::atomic<bool>& shutdown)
-    : sm_(sm), oe_(oe), etf_(etf), global_shutdown_(shutdown)
+               std::atomic<bool>& shutdown, OrderMap& mm_order_map)
+    : sm_(sm), oe_(oe), etf_(etf), global_shutdown_(shutdown),
+      mm_order_map_(mm_order_map)
 {
     oe_.set_on_fill([this](const FillEvent& f) {
-        auto it = order_map_.find(f.order_id);
-        if (it == order_map_.end()) return;
-        sm_.on_fill(it->second.first, it->second.second, f.qty, f.price);
-        if (f.closed) order_map_.erase(it);
+        std::cout << "[FILL] order=" << f.order_id
+                  << " qty=" << f.qty
+                  << " price=" << f.price << "\n";
+
+        // Check arb orders first
+        auto arb_it = order_map_.find(f.order_id);
+        if (arb_it != order_map_.end()) {
+            sm_.on_fill(arb_it->second.first,
+                        arb_it->second.second,
+                        f.qty, f.price);
+            if (f.closed) order_map_.erase(arb_it);
+            return;
+        }
+
+        // Then check MM orders
+        auto mm_it = mm_order_map_.find(f.order_id);
+        if (mm_it != mm_order_map_.end()) {
+            sm_.on_fill(mm_it->second.first,
+                        mm_it->second.second,
+                        f.qty, f.price);
+            if (f.closed) mm_order_map_.erase(mm_it);
+            return;
+        }
+
+        std::cerr << "[FILL] WARNING: unknown order_id=" << f.order_id << "\n";
     });
 }
 
@@ -22,6 +44,25 @@ void ETFArb::run() {
         if (sm_.pnl_near_limit()) {
             std::cerr << "[ETFArb] PnL near limit — SHUTTING DOWN\n";
             oe_.cancel_all_open_orders();
+            // Flatten all open positions
+    for (uint32_t id = 1; id <= 13; ++id) {
+        int32_t pos = sm_.get_position(id);
+        if (pos == 0) continue;
+
+        int32_t price = pos > 0
+            ? sm_.best_bid_price(id)   // long → sell at bid
+            : sm_.best_ask_price(id);  // short → buy at ask
+
+        if (price <= 0) continue;
+
+        SIDE side = pos > 0 ? SIDE::SELL : SIDE::BUY;
+        uint64_t oid = next_id();
+        order_map_[oid] = {id, side};
+        std::cerr << "[ETFArb] Flattening sym=" << id
+                  << " pos=" << pos << " at " << price << "\n";
+        oe_.send_new_order(oid, id, side,
+                           static_cast<uint32_t>(std::abs(pos)), price);
+    }
             global_shutdown_.store(true, std::memory_order_release);
             return;
         }

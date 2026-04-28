@@ -163,6 +163,8 @@ private:
     // Updated via CAS loop in on_fill() — no kernel call.
     std::atomic<double> total_pnl_{0.0};
 
+    std::array<double, 14> avg_entry_price_{};
+
     // Safe slot accessor
     SymbolSlot&       slot(uint32_t symbol_id);
     const SymbolSlot& slot(uint32_t symbol_id) const;

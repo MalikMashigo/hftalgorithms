@@ -78,29 +78,41 @@ void SymbolManager::reset_book(uint32_t symbol_id) {
 
 void SymbolManager::on_fill(uint32_t symbol_id, SIDE side,
                              uint32_t qty, int32_t price) {
-    // Update position atomically
     auto& s = slot(symbol_id);
+    int32_t old_pos = s.position.load(std::memory_order_acquire);
+
+    // Update position
+    if (side == SIDE::BUY)
+        s.position.fetch_add(static_cast<int32_t>(qty), std::memory_order_release);
+    else
+        s.position.fetch_sub(static_cast<int32_t>(qty), std::memory_order_release);
+
+    // Update average entry price
     if (side == SIDE::BUY) {
-        s.position.fetch_add(static_cast<int32_t>(qty),
-                             std::memory_order_release);
-    } else {
-        s.position.fetch_sub(static_cast<int32_t>(qty),
-                             std::memory_order_release);
+        double old_val = avg_entry_price_[symbol_id] * std::max(old_pos, 0);
+        double new_qty = old_pos + static_cast<int32_t>(qty);
+        avg_entry_price_[symbol_id] = new_qty > 0
+            ? (old_val + price * qty) / new_qty
+            : price;
     }
 
-    // Update PnL via CAS loop — no mutex, no kernel call.
-    // Buys cost money (subtract), sells earn money (add).
-    double delta = static_cast<double>(qty) * static_cast<double>(price);
-    if (side == SIDE::BUY) delta = -delta;
+    // Only book realized PnL when reducing position
+    bool reducing = (side == SIDE::SELL && old_pos > 0) ||
+                    (side == SIDE::BUY  && old_pos < 0);
+
+    if (!reducing) return;
+
+    uint32_t closing_qty = std::min(qty, static_cast<uint32_t>(std::abs(old_pos)));
+    double avg_entry     = avg_entry_price_[symbol_id];
+    double realized      = (side == SIDE::SELL)
+        ? (price - avg_entry) * closing_qty
+        : (avg_entry - price) * closing_qty;
 
     double expected = total_pnl_.load(std::memory_order_relaxed);
     while (!total_pnl_.compare_exchange_weak(
-               expected, expected + delta,
+               expected, expected + realized,
                std::memory_order_release,
-               std::memory_order_relaxed)) {
-        // Another fill landed between our load and CAS — retry.
-        // This loop will virtually never spin more than once in practice.
-    }
+               std::memory_order_relaxed)) {}
 }
 
 // ── Per-symbol reads ──────────────────────────────────────────────────────────

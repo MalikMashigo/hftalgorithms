@@ -1,0 +1,18 @@
+[PnL] total=47.5 | positions: sym1=-1 sym2=1 
+[PnL] total=50 | positions: sym1=-1 sym2=-1 
+[PnL] total=50 | positions: sym1=1 
+[PnL] total=110 | positions: sym1=1 
+[PnL] total=130 | positions: sym1=2 sym2=5 
+[PnL] total=130 | positions: sym1=3 sym2=6 
+[PnL] total=136.528 | positions: sym1=3 sym2=7 
+[PnL] total=136.528 | positions: sym1=5 sym2=9 
+[PnL] total=147.875 | positions: sym1=5 sym2=9 
+[PnL] total=199.692 | positions: sym1=7 sym2=5 
+[PnL] total=234.335 | positions: sym1=6 sym2=8 
+[PnL] total=272.142 | positions: sym1=3 sym2=8 
+[PnL] total=272.142 | positions: sym1=3 sym2=8 
+[PnL] total=272.142 | positions: sym1=3 sym2=8 
+[PnL] total=272.142 | positions: sym1=3 sym2=8 
+[PnL] total=272.142 | positions: sym1=3 sym2=8 
+[PnL] total=272.142 | positions: sym1=3 sym2=8 
+[PnL] total=272.142 | positions: sym1=3 sym2=8 

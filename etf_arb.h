@@ -11,10 +11,14 @@
 
 static constexpr int32_t MIN_EDGE = 10;
 
+using OrderMap = std::unordered_map<uint64_t, std::pair<uint32_t, SIDE>>;
+
+
 class ETFArb {
 public:
     ETFArb(SymbolManager& sm, OEClient& oe, ETFClient& etf,
-           std::atomic<bool>& shutdown);
+           std::atomic<bool>& shutdown,
+            OrderMap& mm_order_map);
 
     void run();
     void stop() { running_.store(false, std::memory_order_release); }
@@ -28,6 +32,7 @@ private:
     std::atomic<uint64_t> next_order_id_{1000};
 
     std::unordered_map<uint64_t, std::pair<uint32_t, SIDE>> order_map_;
+    OrderMap& mm_order_map_; 
 
     uint64_t next_id() {
         return next_order_id_.fetch_add(1, std::memory_order_relaxed);

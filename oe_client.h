@@ -53,6 +53,8 @@ public:
     using RejectCb = std::function<void(uint64_t order_id)>;
     using CloseCb  = std::function<void(uint64_t order_id)>;
 
+    FillCb get_on_fill() const { return on_fill_cb_; }
+
     void set_on_fill  (FillCb   cb) { on_fill_cb_   = cb; }
     void set_on_reject(RejectCb cb) { on_reject_cb_ = cb; }
     void set_on_close (CloseCb  cb) { on_close_cb_  = cb; }
