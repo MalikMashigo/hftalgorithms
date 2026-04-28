@@ -1,18 +1,19 @@
-[PnL] total=47.5 | positions: sym1=-1 sym2=1 
-[PnL] total=50 | positions: sym1=-1 sym2=-1 
-[PnL] total=50 | positions: sym1=1 
-[PnL] total=110 | positions: sym1=1 
-[PnL] total=130 | positions: sym1=2 sym2=5 
-[PnL] total=130 | positions: sym1=3 sym2=6 
-[PnL] total=136.528 | positions: sym1=3 sym2=7 
-[PnL] total=136.528 | positions: sym1=5 sym2=9 
-[PnL] total=147.875 | positions: sym1=5 sym2=9 
-[PnL] total=199.692 | positions: sym1=7 sym2=5 
-[PnL] total=234.335 | positions: sym1=6 sym2=8 
-[PnL] total=272.142 | positions: sym1=3 sym2=8 
-[PnL] total=272.142 | positions: sym1=3 sym2=8 
-[PnL] total=272.142 | positions: sym1=3 sym2=8 
-[PnL] total=272.142 | positions: sym1=3 sym2=8 
-[PnL] total=272.142 | positions: sym1=3 sym2=8 
-[PnL] total=272.142 | positions: sym1=3 sym2=8 
-[PnL] total=272.142 | positions: sym1=3 sym2=8 
+[PnL] total=15 | positions: sym1=-1 
+[PnL] total=15 | positions: sym1=-1 sym2=1 
+[PnL] total=57.5 | positions: sym1=2 sym2=1 
+[PnL] total=68.75 | positions: sym1=4 sym2=1 
+[PnL] total=70.75 | positions: sym1=5 sym2=3 
+[PnL] total=85.45 | positions: sym1=3 sym2=5 
+[PnL] total=89.5571 | positions: sym1=3 sym2=6 
+[PnL] total=66.3714 | positions: sym1=3 sym2=4 
+[PnL] total=76.1286 | positions: sym1=3 sym2=3 
+[PnL] total=87.7089 | positions: sym1=2 sym2=3 
+[PnL] total=63.553 | positions: sym1=1 sym2=4 sym3=14 sym4=12 sym5=14 sym6=14 sym7=13 sym8=13 sym9=13 sym10=13 sym11=13 sym12=13 
+[PnL] total=69.9691 | positions: sym1=3 sym2=6 sym3=12 sym4=12 sym5=14 sym6=14 sym7=14 sym8=14 sym9=14 sym10=14 sym11=14 sym12=14 
+[PnL] total=100.659 | positions: sym1=3 sym2=4 sym3=12 sym4=12 sym5=14 sym6=14 sym7=14 sym8=14 sym9=14 sym10=14 sym11=14 sym12=14 
+[PnL] total=100.659 | positions: sym1=3 sym2=4 sym3=12 sym4=12 sym5=14 sym6=14 sym7=14 sym8=14 sym9=14 sym10=14 sym11=14 sym12=14 
+[PnL] total=100.659 | positions: sym1=3 sym2=4 sym3=12 sym4=12 sym5=14 sym6=14 sym7=14 sym8=14 sym9=14 sym10=14 sym11=14 sym12=14 
+[PnL] total=100.659 | positions: sym1=3 sym2=4 sym3=12 sym4=12 sym5=14 sym6=14 sym7=14 sym8=14 sym9=14 sym10=14 sym11=14 sym12=14 
+[PnL] total=100.659 | positions: sym1=3 sym2=4 sym3=12 sym4=12 sym5=14 sym6=14 sym7=14 sym8=14 sym9=14 sym10=14 sym11=14 sym12=14 
+[PnL] total=100.659 | positions: sym1=3 sym2=4 sym3=12 sym4=12 sym5=14 sym6=14 sym7=14 sym8=14 sym9=14 sym10=14 sym11=14 sym12=14 
+[PnL] total=100.659 | positions: sym1=3 sym2=4 sym3=12 sym4=12 sym5=14 sym6=14 sym7=14 sym8=14 sym9=14 sym10=14 sym11=14 sym12=14 

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <cstdint>
+#include <unordered_map>
 
 // Returned by every mutating ETF call (create / redeem).
 // On success:  success=true,  message describes the operation,
@@ -48,6 +49,8 @@ public:
     // GET /health — returns true if service is up.
     // Call once at bot startup to verify connectivity.
     bool health_check();
+
+    std::unordered_map<std::string, int32_t> get_positions(int client_id);
 
 private:
     std::string host_;      // e.g. "129.74.160.245"
