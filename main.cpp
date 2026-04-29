@@ -5,6 +5,8 @@
 #include <utility>
 #include <csignal>
 #include <chrono>
+#include <execinfo.h>
+#include <unistd.h>
 
 #include "symbol_manager.h"
 #include "oe_client.h"
@@ -24,6 +26,22 @@ static constexpr uint32_t BLUE_TICK = 5;
 static constexpr int32_t  MM_POSITION_LIMIT = 4;
 
 int main() {
+    // Crash handlers — must be before anything else
+    std::signal(SIGSEGV, [](int sig) {
+        void* array[20];
+        int size = backtrace(array, 20);
+        std::cerr << "CRASH signal=" << sig << " (SIGSEGV)\n";
+        backtrace_symbols_fd(array, size, STDERR_FILENO);
+        std::exit(1);
+    });
+    std::signal(SIGABRT, [](int sig) {
+        void* array[20];
+        int size = backtrace(array, 20);
+        std::cerr << "CRASH signal=" << sig << " (SIGABRT)\n";
+        backtrace_symbols_fd(array, size, STDERR_FILENO);
+        std::exit(1);
+    });
+
     // ── Shared state ──────────────────────────────────────────────────────────
     SymbolManager       sm;
     sm.load_positions("positions.txt");
@@ -234,7 +252,7 @@ int main() {
     // });
 
     std::thread bot_thread([&]() {
-    arb.run_with_mm(3, BLUE_TICK);
+    arb.run_with_mm(7, BLUE_TICK);
     });
     md_thread.join();
     bot_thread.join();

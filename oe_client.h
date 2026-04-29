@@ -39,11 +39,13 @@ public:
     void send_new_order_no_wait(uint64_t order_id, uint32_t symbol,
                              SIDE side, uint32_t qty, int32_t price);\
 
-    bool wait_for_response();
+    bool wait_for_response(uint64_t expected_order_id);
      
     bool delete_order(uint64_t order_id) override;
     bool modify_order(uint64_t order_id, SIDE side,
                       uint32_t qty, int32_t price) override;
+
+    bool wait_for_fill(uint64_t expected_order_id);
 
     // Cancel every order that has been ACK'd and not yet fully filled/closed.
     void cancel_all_open_orders();

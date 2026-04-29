@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <chrono>
 
 std::ofstream logfile("oe_log.txt");
 
@@ -94,7 +95,17 @@ bool OEClient::read_response(char* buf, size_t& out_len) {
     return true;
 }
 
-bool OEClient::wait_for_response() {
+bool OEClient::wait_for_response(uint64_t expected_order_id) {
+    auto deadline = std::chrono::steady_clock::now()
+                  + std::chrono::milliseconds(3000);
+
+    while (true) {
+        if (std::chrono::steady_clock::now() > deadline) {
+            std::cerr << "[OEClient] Timeout waiting for order_id="
+                      << expected_order_id << "\n";
+            return false;
+        }
+
     char buf[256];
     size_t len;
     while (true) {
@@ -104,28 +115,52 @@ bool OEClient::wait_for_response() {
         if (hdr->msg_type == (uint8_t)ndfex::oe::MSG_TYPE::ACK) {
             auto* ack = reinterpret_cast<ndfex::oe::order_ack*>(buf);
             live_orders_.insert(ack->order_id);
-            std::cout << "ACKed! order_id=" << ack->order_id << std::endl;
-            return true;
+            if (ack->order_id == expected_order_id) {
+                std::cout << "ACKed! order_id=" << ack->order_id << std::endl;
+                return true;
+            }
+            // This is a resting MM order ACK arriving during arb ACK collection.
+            // Fill callback has already been wired up by the caller — safe to skip.
+            std::cout << "[OEClient] ACK for other order_id=" << ack->order_id
+                      << " (waiting for " << expected_order_id
+                      << ") — processed and continuing\n";
+            continue;
 
         } else if (hdr->msg_type == (uint8_t)ndfex::oe::MSG_TYPE::REJECT) {
             auto* rej = reinterpret_cast<ndfex::oe::order_reject*>(buf);
-            std::cerr << "REJECTED order_id=" << rej->order_id
+            std::cerr << "[OEClient] REJECTED order_id=" << rej->order_id
                       << " reason=" << (int)rej->reject_reason << std::endl;
             if (on_reject_cb_) on_reject_cb_(rej->order_id);
-            return false;
+
+            if (rej->order_id == expected_order_id) {
+                if (rej->reject_reason == (uint8_t)ndfex::oe::REJECT_REASON::UKNOWN_ORDER_ID) {
+                std::cout << "[OEClient] REJECT reason=UNKNOWN_ORDER_ID order_id="
+                      << rej->order_id << " — already gone, treating as success\n";
+                return true;
+                }
+                std::cerr << "[OEClient] REJECT order_id=" << rej->order_id
+                  << " reason=" << (int)rej->reject_reason
+                  << " — our order, returning false\n";
+                return false;
+            }
+            std::cerr << " — not our order (wanted " << expected_order_id
+                      << "), continuing\n";
+            continue;
+
 
         } else if (hdr->msg_type == (uint8_t)ndfex::oe::MSG_TYPE::FILL) {
             auto* fill = reinterpret_cast<ndfex::oe::order_fill*>(buf);
             bool closed = (fill->flags == (uint8_t)ndfex::oe::FILL_FLAGS::CLOSED);
 
-            std::cout << "Filled! order_id=" << fill->order_id
-                      << " qty=" << fill->quantity
-                      << " price=" << fill->price << std::endl;
-
             if (on_fill_cb_) {
                 on_fill_cb_(FillEvent{fill->order_id, fill->quantity,
                                       fill->price, closed});
             }
+
+             std::cout << "[OEClient] Filled! order_id=" << fill->order_id
+                      << " qty=" << fill->quantity
+                      << " price=" << fill->price << std::endl;
+
 
             if (closed) {
                 live_orders_.erase(fill->order_id);
@@ -139,10 +174,10 @@ bool OEClient::wait_for_response() {
             std::cout << "Order closed. order_id=" << cl->order_id << std::endl;
             if (on_close_cb_) on_close_cb_(cl->order_id);
             return true;
+            }
         }
     }
 }
-
 void OEClient::log_message(const char* direction, const void* data, size_t len) {
     logfile << direction << " [" << len << " bytes]: ";
     const uint8_t* bytes = reinterpret_cast<const uint8_t*>(data);
@@ -170,7 +205,7 @@ bool OEClient::send_new_order(uint64_t order_id, uint32_t symbol,
     msg.flags             = 0;
 
     send_raw(&msg, sizeof(msg));
-    return wait_for_response();
+    return wait_for_response(order_id);
 }
 
 void OEClient::send_new_order_no_wait(uint64_t order_id, uint32_t symbol,
@@ -204,7 +239,7 @@ bool OEClient::delete_order(uint64_t order_id) {
     msg.order_id          = order_id;
 
     send_raw(&msg, sizeof(msg));
-    return wait_for_response();
+    return wait_for_response(order_id);
 }
 
 bool OEClient::modify_order(uint64_t order_id, SIDE side,
@@ -222,7 +257,7 @@ bool OEClient::modify_order(uint64_t order_id, SIDE side,
     msg.price             = price;
 
     send_raw(&msg, sizeof(msg));
-    return wait_for_response();
+    return wait_for_response(order_id);
 }
 
 void OEClient::cancel_all_open_orders() {
@@ -291,3 +326,73 @@ void OEClient::cancel_all_open_orders() {
 
 //     return 0;
 // }
+
+bool OEClient::wait_for_fill(uint64_t expected_order_id) {
+    auto deadline = std::chrono::steady_clock::now()
+                  + std::chrono::milliseconds(5000);
+
+    while (true) {
+        if (std::chrono::steady_clock::now() > deadline) {
+            std::cerr << "[OEClient] wait_for_fill timeout order_id="
+                      << expected_order_id << "\n";
+            return false;
+        }
+
+        char buf[256];
+        size_t len;
+        if (!read_response(buf, len)) return false;
+
+        auto* hdr = reinterpret_cast<ndfex::oe::oe_response_header*>(buf);
+
+        if (hdr->msg_type == (uint8_t)ndfex::oe::MSG_TYPE::FILL) {
+            auto* fill = reinterpret_cast<ndfex::oe::order_fill*>(buf);
+            bool closed = (fill->flags == (uint8_t)ndfex::oe::FILL_FLAGS::CLOSED);
+
+            // Always fire callback — keeps MM positions accurate
+            if (on_fill_cb_)
+                on_fill_cb_(FillEvent{fill->order_id, fill->quantity,
+                                      fill->price, closed});
+            if (closed) live_orders_.erase(fill->order_id);
+
+            std::cout << "[OEClient] wait_for_fill: FILL order_id=" << fill->order_id
+                      << " qty=" << fill->quantity
+                      << " price=" << fill->price
+                      << " closed=" << closed;
+
+            if (fill->order_id == expected_order_id && closed) {
+                std::cout << " — target filled\n";
+                return true;
+            }
+            // Partial fill on our order, or fill on a different order
+            std::cout << (fill->order_id == expected_order_id
+                            ? " — partial, continuing\n"
+                            : " — other order, continuing\n");
+
+        } else if (hdr->msg_type == (uint8_t)ndfex::oe::MSG_TYPE::ACK) {
+            auto* ack = reinterpret_cast<ndfex::oe::order_ack*>(buf);
+            live_orders_.insert(ack->order_id);
+            std::cout << "[OEClient] wait_for_fill: ACK order_id="
+                      << ack->order_id << " (waiting for fill on "
+                      << expected_order_id << ")\n";
+
+        } else if (hdr->msg_type == (uint8_t)ndfex::oe::MSG_TYPE::REJECT) {
+            auto* rej = reinterpret_cast<ndfex::oe::order_reject*>(buf);
+            if (on_reject_cb_) on_reject_cb_(rej->order_id);
+            std::cerr << "[OEClient] wait_for_fill: REJECT order_id="
+                      << rej->order_id << " reason=" << (int)rej->reject_reason;
+            if (rej->order_id == expected_order_id) {
+                std::cerr << " — our order rejected\n";
+                return false;
+            }
+            std::cerr << " — other order\n";
+
+        } else if (hdr->msg_type == (uint8_t)ndfex::oe::MSG_TYPE::CLOSE) {
+            auto* cl = reinterpret_cast<ndfex::oe::order_closed*>(buf);
+            live_orders_.erase(cl->order_id);
+            if (on_close_cb_) on_close_cb_(cl->order_id);
+            std::cout << "[OEClient] wait_for_fill: CLOSE order_id="
+                      << cl->order_id << "\n";
+            if (cl->order_id == expected_order_id) return false;
+        }
+    }
+}

@@ -11,7 +11,7 @@
 #include "etf_client.h"
 #include "oe_client.h"
 
-static constexpr int32_t MIN_EDGE = 10;
+static constexpr int32_t MIN_EDGE = 0;
 
 using OrderMap = std::unordered_map<uint64_t, std::pair<uint32_t, SIDE>>;
 
@@ -36,6 +36,8 @@ private:
     std::atomic<uint64_t> next_order_id_{1000};
     std::chrono::steady_clock::time_point arb_start_time_;
     std::chrono::steady_clock::time_point last_unwind_time_{};
+    uint64_t blue_bid_id_  = 0;
+    uint64_t blue_ask_id_  = 0;
 
     std::unordered_map<uint64_t, std::pair<uint32_t, SIDE>> order_map_;
     OrderMap& mm_order_map_; 
