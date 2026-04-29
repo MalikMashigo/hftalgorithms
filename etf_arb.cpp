@@ -62,7 +62,7 @@ void ETFArb::run() {
                   << " pos=" << pos << " at " << price << "\n";
         oe_.send_new_order(oid, id, side,
                            static_cast<uint32_t>(std::abs(pos)), price);
-    }
+        }
             global_shutdown_.store(true, std::memory_order_release);
             return;
         }
@@ -152,12 +152,37 @@ bool ETFArb::try_creation_arb(const ArbSnapshot& snap) {
 
     std::cout << "[ETFArb] /create OK, undy_balance=" << r.undy_balance << "\n";
 
-    // Step 5: sell UNDY
-    uint64_t undy_oid = next_id();
-    order_map_[undy_oid] = {SYM_UNDY, SIDE::SELL};
-    oe_.send_new_order(undy_oid, SYM_UNDY,
-                       SIDE::SELL, static_cast<uint32_t>(qty),
-                       snap.undy_best_bid_price);
+    // Step 5: sell UNDY until flat
+    int32_t undy_pos = sm_.get_position(SYM_UNDY);
+    int32_t attempts = 0;
+
+    while (undy_pos > 0 && attempts < 5) {
+        int32_t bid = sm_.best_bid_price(SYM_UNDY);
+        if (bid <= 0) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        undy_pos = sm_.get_position(SYM_UNDY);
+        continue;
+        }
+
+
+        uint64_t undy_oid = next_id();
+        order_map_[undy_oid] = {SYM_UNDY, SIDE::SELL};
+        oe_.send_new_order(undy_oid, SYM_UNDY,
+                       SIDE::SELL, 
+                       static_cast<uint32_t>(undy_pos),
+                       bid); 
+        
+        // Wait briefly then check if position closed
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        undy_pos = sm_.get_position(SYM_UNDY);
+        ++attempts;
+    }
+
+    if (undy_pos > 0) {
+    std::cerr << "[ETFArb] WARNING: " << undy_pos 
+              << " UNDY lots still unsold after " << attempts << " attempts\n";
+    }
+
     return true;
 }
 

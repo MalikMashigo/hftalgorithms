@@ -22,7 +22,7 @@ static constexpr uint32_t    CLIENT_ID     = 8;
 
 static constexpr uint32_t GOLD_TICK = 10;
 static constexpr uint32_t BLUE_TICK = 5;
-static constexpr int32_t  MM_POSITION_LIMIT = 8;
+static constexpr int32_t  MM_POSITION_LIMIT = 6;
 
 int main() {
     // ── Shared state ──────────────────────────────────────────────────────────

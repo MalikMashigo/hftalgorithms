@@ -9,6 +9,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <cstring>
+#include <unordered_map>
 
 // ── URL parsing ───────────────────────────────────────────────────────────────
 
@@ -244,4 +245,47 @@ ETFResult ETFClient::parse_response(const std::string& body, bool http_ok) {
     }
 
     return result;
+}
+
+// Add to etf_client.cpp:
+std::unordered_map<std::string, int32_t> ETFClient::get_positions(int client_id) {
+    std::string request =
+        "GET /positions/" + std::to_string(client_id) + " HTTP/1.0\r\n"
+        "Host: " + host_ + ":" + port_ + "\r\n"
+        "Connection: close\r\n"
+        "\r\n";
+
+    std::string response = send_http_request(request);
+    std::string body     = extract_body(response);
+
+    // Parse {"client_id":8,"positions":{"GOLD":7,"BLUE":4}}
+    std::unordered_map<std::string, int32_t> positions;
+    size_t pos = body.find("\"positions\":");
+    if (pos == std::string::npos) return positions;
+
+    // Find each "TICKER":value pair
+    size_t start = body.find('{', pos + 12);
+    size_t end   = body.find('}', start);
+    if (start == std::string::npos || end == std::string::npos) return positions;
+
+    std::string pos_block = body.substr(start + 1, end - start - 1);
+    size_t i = 0;
+    while (i < pos_block.size()) {
+        // Find ticker
+        size_t q1 = pos_block.find('"', i);
+        if (q1 == std::string::npos) break;
+        size_t q2 = pos_block.find('"', q1 + 1);
+        if (q2 == std::string::npos) break;
+        std::string ticker = pos_block.substr(q1 + 1, q2 - q1 - 1);
+
+        // Find value
+        size_t colon = pos_block.find(':', q2);
+        if (colon == std::string::npos) break;
+        int32_t value = std::stoi(pos_block.substr(colon + 1));
+        positions[ticker] = value;
+        i = pos_block.find(',', colon);
+        if (i == std::string::npos) break;
+        ++i;
+    }
+    return positions;
 }

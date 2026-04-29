@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <unordered_map>
 #include <utility>
+#include <thread>
+#include <chrono>
 
 #include "symbol_manager.h"
 #include "etf_client.h"
@@ -22,6 +24,7 @@ public:
 
     void run();
     void stop() { running_.store(false, std::memory_order_release); }
+    std::atomic<bool> arb_in_progress_{false};
 
 private:
     SymbolManager&     sm_;
