@@ -1,0 +1,12 @@
+=== PnL Log Started ===
+[PnL] total=100.00 | positions: sym1=1
+[PnL] total=150.25 | positions: sym1=2 sym2=-1
+[PnL] total=200.50 | positions: sym1=3 sym2=-1
+[PnL] total=350.75 | positions: sym1=5 sym2=-2
+[PnL] total=450.25 | positions: sym1=5 sym2=-2 sym3=1
+[PnL] total=650.50 | positions: sym1=5 sym2=-3 sym3=2
+[PnL] total=750.00 | positions: sym1=5 sym2=-3 sym3=2
+[PnL] total=900.25 | positions: sym1=5 sym2=-3 sym3=2
+[PnL] total=1050.75 | positions: sym1=5 sym2=-3 sym3=2
+[PnL] total=1250.50 | positions: sym1=5 sym2=-3 sym3=2
+=== PnL Log Ended ===

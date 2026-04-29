@@ -1,5 +1,6 @@
 #include <thread>
 #include <iostream>
+#include <fstream>
 #include <atomic>
 #include <unordered_map>
 #include <utility>
@@ -84,19 +85,49 @@ int main() {
 
     // ── PnL monitor thread ────────────────────────────────────────────────────
     std::thread pnl_thread([&]() {
+        std::ofstream pnl_log("pnl_log.txt", std::ios::app);
+        std::ofstream pnl_file("pnl.txt", std::ios::trunc);
+        pnl_log << "=== PnL Log Started ===\n";
+        pnl_log.flush();
+        pnl_file << "=== PnL Summary ===\n";
+        pnl_file.flush();
+
         while (!global_shutdown.load(std::memory_order_acquire)) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
             double pnl = sm.get_total_pnl();
-            std::cout << "[PnL] total=" << pnl << " | positions: ";
+            
+            // Format output
+            std::string output = "[PnL] total=" + std::to_string(pnl) + " | positions: ";
             for (uint32_t id = 1; id <= 13; ++id) {
                 int32_t pos = sm.get_position(id);
-                if (pos != 0) std::cout << "sym" << id << "=" << pos << " ";
+                if (pos != 0) output += "sym" + std::to_string(id) + "=" + std::to_string(pos) + " ";
             }
-            std::cout << "\n";
+
+            // Write to console
+            std::cout << output << "\n";
             std::cout.flush();
-            if (pnl < -4000.0)
-                std::cerr << "[PnL] WARNING: approaching -5000 floor!\n";
+            
+            // Write to pnl_log.txt (detailed history)
+            pnl_log << output << "\n";
+            pnl_log.flush();
+            
+            // Write to pnl.txt (latest only, overwrites each time)
+            pnl_file.seekp(0);
+            pnl_file.write(output.c_str(), output.length());
+            pnl_file << "\n";
+            pnl_file.flush();
+
+            if (pnl < -4000.0) {
+                std::string warning = "[PnL] WARNING: approaching -5000 floor!";
+                std::cerr << warning << "\n";
+                pnl_log << warning << "\n";
+                pnl_log.flush();
+            }
         }
+        pnl_log << "=== PnL Log Ended ===\n";
+        pnl_log.flush();
+        pnl_log.close();
+        pnl_file.close();
     });
 
     // ── Market maker thread (GOLD + BLUE using MarketMaker class) ────────────

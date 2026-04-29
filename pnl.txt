@@ -1,0 +1,2 @@
+=== PnL Summary ===
+[PnL] total=1250.50 | positions: sym1=5 sym2=-3 sym3=2
